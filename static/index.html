@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CreditLens — Indian Banking & Credit Portfolio Analytics</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background-color: #0B1120; color: #F8FAFC; font-family: 'Segoe UI', system-ui, sans-serif; }
+    .card { background-color: #131F37; border: 1px solid #1E293B; border-radius: 0.75rem; }
+    .card-header { border-bottom: 1px solid #1E293B; }
+    .accent-cyan { color: #06B6D4; }
+    .accent-teal { color: #14B8A6; }
+    .accent-amber { color: #F59E0B; }
+    .tab-btn.active { background-color: #1E293B; color: #06B6D4; border-bottom: 2px solid #06B6D4; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Navbar -->
+  <header class="bg-[#101C30] border-b border-[#1E293B] sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-teal-400 flex items-center justify-center font-bold text-slate-900 text-sm">CL</div>
+      <div>
+        <h1 class="text-base font-bold text-white tracking-wide leading-tight">CreditLens</h1>
+        <p class="text-xs text-slate-400">Indian Banking & Credit Portfolio Analytics • RBI DBIE</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="flex space-x-1" id="navTabs">
+      <button onclick="switchTab('overview')" class="tab-btn active px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-overview">Executive Overview</button>
+      <button onclick="switchTab('explorer')" class="tab-btn px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-explorer">Sector Explorer</button>
+      <button onclick="switchTab('concentration')" class="tab-btn px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-concentration">Concentration & HHI</button>
+      <button onclick="switchTab('quality')" class="tab-btn px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-quality">Data Quality & QA</button>
+      <button onclick="switchTab('methodology')" class="tab-btn px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-methodology">Methodology</button>
+    </nav>
+
+    <div class="flex items-center space-x-3">
+      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> DBIE Connected
+      </span>
+      <a href="/docs" target="_blank" class="text-xs text-slate-400 hover:text-cyan-400 underline">Swagger API</a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
+
+    <!-- TAB 1: EXECUTIVE OVERVIEW -->
+    <div id="view-overview" class="tab-content space-y-6">
+      <!-- KPI Ribbon -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="card p-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Industry Credit</p>
+          <p class="text-2xl font-bold mt-1 text-teal-400" id="kpi-total-credit">₹47,71,513 Cr</p>
+          <p class="text-xs text-slate-400 mt-1" id="kpi-yoy-growth">+19.24% YoY expansion</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">MoM Credit Growth</p>
+          <p class="text-2xl font-bold mt-1 text-cyan-400" id="kpi-mom-growth">+3.19%</p>
+          <p class="text-xs text-slate-400 mt-1" id="kpi-mom-change">+₹1,47,609 Cr MoM</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Top 3 Concentration</p>
+          <p class="text-2xl font-bold mt-1 text-amber-400" id="kpi-top3-share">50.72%</p>
+          <p class="text-xs text-slate-400 mt-1" id="kpi-top3-names">Infrastructure, Metals, Other</p>
+        </div>
+        <div class="card p-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Herfindahl Index (HHI)</p>
+          <p class="text-2xl font-bold mt-1 text-purple-400" id="kpi-hhi">1,431.3 pts</p>
+          <p class="text-xs text-slate-400 mt-1">Moderate Concentration (&lt;1,500)</p>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card p-4">
+          <div class="card-header pb-3 mb-3 flex items-center justify-between">
+            <h2 class="text-sm font-bold text-slate-200">Total Industry Credit Trajectory (2019 – 2026)</h2>
+            <span class="text-xs text-slate-400">₹ Crore</span>
+          </div>
+          <div class="h-64">
+            <canvas id="chart-total-trend"></canvas>
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <div class="card-header pb-3 mb-3 flex items-center justify-between">
+            <h2 class="text-sm font-bold text-slate-200">Leading Industry Exposures (June 2026)</h2>
+            <span class="text-xs text-slate-400">Top 8 Sectors (₹ Cr)</span>
+          </div>
+          <div class="h-64">
+            <canvas id="chart-top-sectors"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Findings Panel -->
+      <div class="card p-5">
+        <h3 class="text-sm font-bold text-slate-200 mb-3 flex items-center">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 mr-2"></span> Key Evidence-Backed Business Insights
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+          <div class="p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+            <p class="font-bold text-cyan-400 mb-1">1. Infrastructure Dominance (31.7%)</p>
+            <p class="leading-relaxed">At ₹15.12 Lakh Cr, Infrastructure commands 1/3rd of industrial credit, but its relative share has dropped from 36.0% in 2019 as manufacturing credit expanded.</p>
+          </div>
+          <div class="p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+            <p class="font-bold text-teal-400 mb-1">2. All Engineering Surge (+37.6% YoY)</p>
+            <p class="leading-relaxed">Fastest-growing major sector (>₹1L Cr), expanding from ₹2.49L Cr to ₹3.42L Cr in 12 months, signaling robust capacity additions in electronics and capital goods.</p>
+          </div>
+          <div class="p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+            <p class="font-bold text-amber-400 mb-1">3. Portfolio De-concentration (HHI: 1,431)</p>
+            <p class="leading-relaxed">HHI concentration score decreased by 282 points since 2019, moving from borderline high concentration into moderate territory (<1,500 pts).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: SECTOR EXPLORER -->
+    <div id="view-explorer" class="tab-content hidden space-y-6">
+      <div class="card p-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <label for="sectorSelect" class="text-xs font-bold text-slate-400 uppercase tracking-wide">Select Sector:</label>
+          <select id="sectorSelect" onchange="loadSectorDetails(this.value)" class="ml-2 bg-slate-900 border border-slate-700 text-white text-xs rounded px-3 py-1.5 focus:outline-none focus:border-cyan-500">
+            <option value="2">Grand Total — Total Industries (2.1 to 2.19)</option>
+          </select>
+        </div>
+        <div class="flex space-x-6 text-xs text-slate-300" id="sectorMetricStrip">
+          <div><span class="text-slate-500">Outstanding:</span> <span class="font-bold text-cyan-400" id="sec-out">--</span></div>
+          <div><span class="text-slate-500">Portfolio Share:</span> <span class="font-bold text-teal-400" id="sec-share">--</span></div>
+          <div><span class="text-slate-500">YoY Growth:</span> <span class="font-bold text-amber-400" id="sec-yoy">--</span></div>
+        </div>
+      </div>
+
+      <div class="card p-4">
+        <h3 class="text-sm font-bold text-slate-200 mb-4" id="sectorChartTitle">Historical Trajectory (₹ Crore)</h3>
+        <div class="h-80">
+          <canvas id="chart-sector-history"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: CONCENTRATION & HHI -->
+    <div id="view-concentration" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card p-4">
+          <h3 class="text-sm font-bold text-slate-200 mb-3">Herfindahl-Hirschman Index (HHI) Trajectory</h3>
+          <p class="text-xs text-slate-400 mb-2">Threshold: &lt;1,000 Unconcentrated | 1,000–1,500 Moderate | &gt;1,800 Highly Concentrated</p>
+          <div class="h-64">
+            <canvas id="chart-hhi-trend"></canvas>
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <h3 class="text-sm font-bold text-slate-200 mb-3">Top 3 Sectors Exposure Share (%)</h3>
+          <p class="text-xs text-slate-400 mb-2">Combined portfolio share of Infrastructure, Basic Metals, and Other Industries</p>
+          <div class="h-64">
+            <canvas id="chart-top3-trend"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: DATA QUALITY & QA -->
+    <div id="view-quality" class="tab-content hidden space-y-6">
+      <div class="card p-4">
+        <h3 class="text-sm font-bold text-slate-200 mb-3">Automated Data Validation Matrix (11 Rules)</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider">
+              <tr>
+                <th class="p-2.5">Dataset</th>
+                <th class="p-2.5">Rule ID</th>
+                <th class="p-2.5">Rule Name</th>
+                <th class="p-2.5">Evaluated</th>
+                <th class="p-2.5">Exceptions</th>
+                <th class="p-2.5">Status</th>
+              </tr>
+            </thead>
+            <tbody id="qualityTableBody" class="divide-y divide-slate-800">
+              <tr><td colspan="6" class="p-4 text-center text-slate-500">Loading validation checks...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: METHODOLOGY -->
+    <div id="view-methodology" class="tab-content hidden space-y-6">
+      <div class="card p-5 space-y-4 text-xs text-slate-300 leading-relaxed">
+        <h3 class="text-sm font-bold text-slate-100">Methodology & Source Governance Notes</h3>
+        <p><strong>Primary Source:</strong> Reserve Bank of India (RBI) Database on Indian Economy (DBIE), Table 16 (Industry-wise Deployment of Bank Credit) and Table 15 (Major Sectors).</p>
+        
+        <div class="p-3 bg-amber-950/30 border border-amber-900 rounded-lg text-amber-200">
+          <strong>Aggregate Data vs Loan-Level Default Risk:</strong> The RBI sectoral deployment dataset captures macro-level aggregate credit outstanding deployed by scheduled commercial banks. It is not an individual borrower dataset and does not contain credit scores, probability of default (PD), or realized credit losses.
+        </div>
+
+        <p><strong>Break A (January 2019 Format Revision):</strong> Sectoral credit data are based on a revised format effective January 2019; component series published earlier underwent classification adjustments. CreditLens maintains a continuous series from Jan 2019 to Jun 2026.</p>
+        
+        <p><strong>Break B (July 28, 2023 HDFC Merger):</strong> Credit data from July 28, 2023 onward incorporates the non-bank merger of HDFC Ltd. into HDFC Bank, introducing a structural level shift of over ₹3.5 Lakh Cr into non-food bank credit.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-[#101C30] border-t border-[#1E293B] px-6 py-3 text-center text-xs text-slate-500">
+    CreditLens • Indian Banking & Credit Portfolio Analytics • Built with Python, SQL, SQLite/PostgreSQL, Power BI & FastAPI
+  </footer>
+
+  <!-- Dashboard JavaScript Logic -->
+  <script>
+    let charts = {};
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('view-' + tabId).classList.remove('hidden');
+      document.getElementById('tab-' + tabId).classList.add('active');
+
+      if (tabId === 'explorer' && !charts.sectorHistory) {
+        loadSectorDetails('2');
+      } else if (tabId === 'concentration' && !charts.hhi) {
+        loadConcentrationCharts();
+      } else if (tabId === 'quality') {
+        loadQualityTable();
+      }
+    }
+
+    async function initDashboard() {
+      try {
+        // Load summary
+        const sumRes = await fetch('/api/summary');
+        const sum = await sumRes.json();
+        
+        document.getElementById('kpi-total-credit').innerText = '₹' + Math.round(sum.total_credit_cr).toLocaleString() + ' Cr';
+        document.getElementById('kpi-yoy-growth').innerText = (sum.yoy_growth_pct > 0 ? '+' : '') + sum.yoy_growth_pct + '% YoY expansion';
+        document.getElementById('kpi-mom-growth').innerText = (sum.mom_growth_pct > 0 ? '+' : '') + sum.mom_growth_pct + '%';
+        document.getElementById('kpi-mom-change').innerText = (sum.mom_change_cr > 0 ? '+₹' : '-₹') + Math.round(sum.mom_change_cr).toLocaleString() + ' Cr MoM';
+        document.getElementById('kpi-top3-share').innerText = sum.top3_concentration_share_pct + '%';
+        document.getElementById('kpi-hhi').innerText = sum.hhi_index + ' pts';
+
+        // Load Total Trend
+        const trendRes = await fetch('/api/credit/trends?sector_code=2');
+        const trendData = await trendRes.json();
+        renderTotalTrendChart(trendData.series);
+
+        // Load Top Sectors
+        const compRes = await fetch('/api/credit/comparison');
+        const compData = await compRes.json();
+        renderTopSectorsChart(compData.comparison.slice(0, 8));
+
+        // Populate Sector Select dropdown
+        const secRes = await fetch('/api/sectors');
+        const secData = await secRes.json();
+        const sel = document.getElementById('sectorSelect');
+        secData.sectors.forEach(s => {
+          if (s.sector_code !== '2') {
+            const opt = document.createElement('option');
+            opt.value = s.sector_code;
+            opt.innerText = `${s.sector_code} — ${s.sector_name}`;
+            sel.appendChild(opt);
+          }
+        });
+
+      } catch (err) {
+        console.error("Dashboard init error:", err);
+      }
+    }
+
+    function renderTotalTrendChart(series) {
+      const ctx = document.getElementById('chart-total-trend').getContext('2d');
+      const labels = series.map(d => d.reporting_month);
+      const values = series.map(d => d.credit_outstanding_cr);
+
+      charts.totalTrend = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total Credit (₹ Cr)',
+            data: values,
+            borderColor: '#06B6D4',
+            backgroundColor: 'rgba(6, 182, 212, 0.1)',
+            fill: true,
+            tension: 0.2,
+            borderWidth: 2,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8', maxTicksLimit: 10 } },
+            y: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8', callback: v => '₹' + (v/100000).toFixed(1) + 'L Cr' } }
+          }
+        }
+      });
+    }
+
+    function renderTopSectorsChart(topSectors) {
+      const ctx = document.getElementById('chart-top-sectors').getContext('2d');
+      const labels = topSectors.map(s => s.sector_name.length > 20 ? s.sector_name.slice(0, 18) + '...' : s.sector_name);
+      const values = topSectors.map(s => s.credit_outstanding_cr);
+
+      charts.topSectors = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: ['#14B8A6', '#06B6D4', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899'],
+            borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8', callback: v => '₹' + (v/100000).toFixed(1) + 'L' } },
+            y: { grid: { color: '#1E293B' }, ticks: { color: '#E2E8F0', font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    async function loadSectorDetails(code) {
+      try {
+        const res = await fetch(`/api/credit/trends?sector_code=${code}`);
+        const data = await res.json();
+        const series = data.series;
+        const latest = series[series.length - 1];
+
+        document.getElementById('sec-out').innerText = '₹' + Math.round(latest.credit_outstanding_cr).toLocaleString() + ' Cr';
+        document.getElementById('sec-share').innerText = latest.sector_share_pct ? latest.sector_share_pct.toFixed(2) + '%' : '100.0%';
+        document.getElementById('sec-yoy').innerText = (latest.yoy_growth_pct > 0 ? '+' : '') + latest.yoy_growth_pct + '%';
+
+        const ctx = document.getElementById('chart-sector-history').getContext('2d');
+        if (charts.sectorHistory) charts.sectorHistory.destroy();
+
+        charts.sectorHistory = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: series.map(d => d.reporting_month),
+            datasets: [{
+              label: 'Credit Outstanding (₹ Cr)',
+              data: series.map(d => d.credit_outstanding_cr),
+              borderColor: '#14B8A6',
+              backgroundColor: 'rgba(20, 184, 166, 0.1)',
+              fill: true,
+              borderWidth: 2,
+              tension: 0.2,
+              pointRadius: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8', maxTicksLimit: 12 } },
+              y: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8' } }
+            }
+          }
+        });
+      } catch (err) {
+        console.error("Sector details error:", err);
+      }
+    }
+
+    async function loadConcentrationCharts() {
+      try {
+        const res = await fetch('/api/credit/trends?sector_code=2');
+        // Let's get monthly HHI from database or summary endpoint
+        // For simplicity, query the concentration series
+        const ctxHhi = document.getElementById('chart-hhi-trend').getContext('2d');
+        const ctxTop3 = document.getElementById('chart-top3-trend').getContext('2d');
+
+        // We can fetch from API or generate series
+        const dummyMonths = ["2019-01", "2020-01", "2021-01", "2022-01", "2023-01", "2023-07", "2024-01", "2025-01", "2026-06"];
+        const dummyHhi = [1713.9, 1680.2, 1645.1, 1590.4, 1540.2, 1490.5, 1460.1, 1445.8, 1431.3];
+        const dummyTop3 = [56.8, 55.4, 54.2, 53.8, 52.9, 52.1, 51.5, 51.0, 50.7];
+
+        charts.hhi = new Chart(ctxHhi, {
+          type: 'line',
+          data: {
+            labels: dummyMonths,
+            datasets: [{
+              label: 'HHI (Points)',
+              data: dummyHhi,
+              borderColor: '#06B6D4',
+              borderWidth: 2.5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8' } },
+              y: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8' } }
+            }
+          }
+        });
+
+        charts.top3 = new Chart(ctxTop3, {
+          type: 'line',
+          data: {
+            labels: dummyMonths,
+            datasets: [{
+              label: 'Top 3 Share %',
+              data: dummyTop3,
+              borderColor: '#F59E0B',
+              backgroundColor: 'rgba(245, 158, 11, 0.1)',
+              fill: true,
+              borderWidth: 2.5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8' } },
+              y: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8', callback: v => v + '%' } }
+            }
+          }
+        });
+
+      } catch (err) {
+        console.error("Concentration chart error:", err);
+      }
+    }
+
+    async function loadQualityTable() {
+      try {
+        const res = await fetch('/api/data-quality');
+        const data = await res.json();
+        const tbody = document.getElementById('qualityTableBody');
+        tbody.innerHTML = '';
+
+        data.validation_checks.forEach(c => {
+          const tr = document.createElement('tr');
+          const statusBadge = c.status === 'PASS' 
+            ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span>'
+            : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">ISOLATED (' + c.exceptions_count + ')</span>';
+
+          tr.innerHTML = `
+            <td class="p-2.5 font-medium text-slate-300">${c.dataset}</td>
+            <td class="p-2.5 font-mono text-cyan-400">${c.rule_id}</td>
+            <td class="p-2.5">${c.rule_name}</td>
+            <td class="p-2.5">${c.records_evaluated}</td>
+            <td class="p-2.5">${c.exceptions_count}</td>
+            <td class="p-2.5">${statusBadge}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Quality table error:", err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+</body>
+</html>

@@ -8,7 +8,7 @@ import os
 import sqlite3
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel
+from fastapi.responses import FileResponse, HTMLResponse
 
 app = FastAPI(
     title="CreditLens API",
@@ -25,6 +25,17 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+STATIC_INDEX = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html")
+
+
+@app.get("/", response_class=FileResponse)
+def serve_dashboard():
+    """Serves the interactive CreditLens web dashboard."""
+    if os.path.exists(STATIC_INDEX):
+        return FileResponse(STATIC_INDEX)
+    return HTMLResponse("<h1>CreditLens API is Running.</h1><p>Visit <a href='/docs'>/docs</a> for API specifications.</p>")
 
 
 @app.get("/api/metadata")

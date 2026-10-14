@@ -8,6 +8,12 @@ from src.api import app
 client = TestClient(app)
 
 
+def test_api_root_dashboard():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "CreditLens" in response.text
+
+
 def test_api_metadata():
     response = client.get("/api/metadata")
     assert response.status_code == 200
