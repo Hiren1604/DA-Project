@@ -1,0 +1,43 @@
+{
+  "project": "CreditLens - Indian Banking & Credit Portfolio Analytics",
+  "publisher": "Reserve Bank of India (RBI)",
+  "source_portal": "Database on Indian Economy (DBIE)",
+  "downloaded_at_utc": "2026-10-14T10:59:07.663271+00:00",
+  "ingestion_version": "1.0.0",
+  "modules": {
+    "module_a_industry_credit": {
+      "title": "Industry-wise deployment of bank credit (Table 16)",
+      "source_url": "https://dbie.rbihub.in/banking/bank-credit-by-industry",
+      "raw_file": "data/raw/rbi_industry_credit_raw.json",
+      "sha256": "17484027864b471a55af0ec278ad4f219828f158a822ed549f76efe1e7c56341",
+      "periods_count": 90,
+      "items_count": 43,
+      "total_observations": 3870,
+      "reporting_min": "January,  18 2019",
+      "reporting_max": "June,  30 2026",
+      "unit": "Rupees crores"
+    },
+    "module_b_major_sectors": {
+      "title": "Deployment of gross bank credit by major sectors (Table 15)",
+      "source_url": "https://dbie.rbihub.in/banking/bank-credit-by-sector",
+      "raw_file": "data/raw/rbi_sector_credit_raw.json",
+      "sha256": "3770ca8c6a775025a6044e5e4614bdb7aa2f7d3d82d076a1661495dc2a08421c",
+      "periods_count": 90,
+      "items_count": 44,
+      "total_observations": 3960,
+      "reporting_min": "January  18, 2019",
+      "reporting_max": "June  30, 2026",
+      "unit": "Rupees crores"
+    }
+  },
+  "known_comparability_breaks": [
+    {
+      "date": "2019-01",
+      "description": "Sectoral credit data based on revised reporting format; earlier published component values underwent changes."
+    },
+    {
+      "date": "2023-07-28",
+      "description": "Data since July 28, 2023 include the impact of the merger of a non-bank (HDFC Ltd.) with a bank (HDFC Bank), causing a structural upward shift in credit series."
+    }
+  ]
+}

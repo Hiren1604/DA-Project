@@ -1,0 +1,91 @@
+{
+  "name": "CreditLensSemanticModel",
+  "compatibilityLevel": 1567,
+  "model": {
+    "culture": "en-US",
+    "dataSources": [
+      {
+        "type": "structured",
+        "name": "CreditLensDB",
+        "connectionDetails": {
+          "protocol": "sqlite",
+          "address": "data/processed/credit_lens.db"
+        }
+      }
+    ],
+    "tables": [
+      {
+        "name": "DimDate",
+        "columns": [
+          {"name": "DateId", "dataType": "int64", "sourceColumn": "date_id", "isKey": true},
+          {"name": "CalendarDate", "dataType": "dateTime", "sourceColumn": "calendar_date"},
+          {"name": "ReportingMonth", "dataType": "string", "sourceColumn": "reporting_month"},
+          {"name": "ReportingYear", "dataType": "int64", "sourceColumn": "reporting_year"},
+          {"name": "ReportingQuarter", "dataType": "string", "sourceColumn": "reporting_quarter"},
+          {"name": "MonthNum", "dataType": "int64", "sourceColumn": "month_num"},
+          {"name": "MonthName", "dataType": "string", "sourceColumn": "month_name"}
+        ]
+      },
+      {
+        "name": "DimSector",
+        "columns": [
+          {"name": "SectorId", "dataType": "int64", "sourceColumn": "sector_id", "isKey": true},
+          {"name": "SectorCode", "dataType": "string", "sourceColumn": "sector_code"},
+          {"name": "SectorName", "dataType": "string", "sourceColumn": "sector_name"},
+          {"name": "ParentCode", "dataType": "string", "sourceColumn": "parent_code"},
+          {"name": "ParentSectorName", "dataType": "string", "sourceColumn": "parent_sector_name"},
+          {"name": "HierarchyLevel", "dataType": "string", "sourceColumn": "hierarchy_level"},
+          {"name": "IsParentTotal", "dataType": "boolean", "sourceColumn": "is_parent_total"},
+          {"name": "IsMutuallyExclusive", "dataType": "boolean", "sourceColumn": "is_mutually_exclusive"}
+        ]
+      },
+      {
+        "name": "DimSource",
+        "columns": [
+          {"name": "SourceId", "dataType": "int64", "sourceColumn": "source_id", "isKey": true},
+          {"name": "SourceName", "dataType": "string", "sourceColumn": "source_name"},
+          {"name": "PublicationTable", "dataType": "string", "sourceColumn": "publication_table"},
+          {"name": "SourceUrl", "dataType": "string", "sourceColumn": "source_url"},
+          {"name": "Unit", "dataType": "string", "sourceColumn": "unit"}
+        ]
+      },
+      {
+        "name": "FactCredit",
+        "columns": [
+          {"name": "ObservationId", "dataType": "int64", "sourceColumn": "observation_id", "isKey": true},
+          {"name": "DateId", "dataType": "int64", "sourceColumn": "date_id"},
+          {"name": "SectorId", "dataType": "int64", "sourceColumn": "sector_id"},
+          {"name": "SourceId", "dataType": "int64", "sourceColumn": "source_id"},
+          {"name": "CreditOutstandingCr", "dataType": "double", "sourceColumn": "credit_outstanding_cr"},
+          {"name": "QualityStatus", "dataType": "string", "sourceColumn": "quality_status"}
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "name": "FactCredit_DimDate",
+        "fromTable": "FactCredit",
+        "fromColumn": "DateId",
+        "toTable": "DimDate",
+        "toColumn": "DateId",
+        "cardinality": "manyToOne"
+      },
+      {
+        "name": "FactCredit_DimSector",
+        "fromTable": "FactCredit",
+        "fromColumn": "SectorId",
+        "toTable": "DimSector",
+        "toColumn": "SectorId",
+        "cardinality": "manyToOne"
+      },
+      {
+        "name": "FactCredit_DimSource",
+        "fromTable": "FactCredit",
+        "fromColumn": "SourceId",
+        "toTable": "DimSource",
+        "toColumn": "SourceId",
+        "cardinality": "manyToOne"
+      }
+    ]
+  }
+}

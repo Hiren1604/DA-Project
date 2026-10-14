@@ -1,0 +1,12 @@
+dataset,rule_id,rule_name,description,records_evaluated,exceptions_count,status,severity
+Industry Credit,VR-01,Date Validity,"Reporting dates must be valid, non-null timestamps",3870,0,PASS,CRITICAL
+Industry Credit,VR-02,Numeric Completeness,Credit outstanding must have a non-null numeric value,3870,0,PASS,HIGH
+Industry Credit,VR-03,Non-Negative Values,Credit outstanding must not be negative,3870,0,PASS,HIGH
+Industry Credit,VR-04,Natural Key Uniqueness,Combination of reporting_date and sector_code must be unique,3870,0,PASS,CRITICAL
+Industry Credit,VR-05,Time-Series Continuity,Reporting periods must span consecutive calendar months without historical gaps,90,0,PASS,MEDIUM
+Industry Credit,VR-06,Hierarchy Aggregation Integrity,Sum of 19 Level-1 sectors (2.1 to 2.19) must match Grand Total (code 2) within rounding tolerance,90,0,PASS,HIGH
+Major Sectors,VR-01,Date Validity,"Reporting dates must be valid, non-null timestamps",3960,0,PASS,CRITICAL
+Major Sectors,VR-02,Numeric Completeness,Credit outstanding must have a non-null numeric value,3960,90,FAIL,HIGH
+Major Sectors,VR-03,Non-Negative Values,Credit outstanding must not be negative,3960,0,PASS,HIGH
+Major Sectors,VR-04,Natural Key Uniqueness,Combination of reporting_date and sector_code must be unique,3960,0,PASS,CRITICAL
+Major Sectors,VR-05,Time-Series Continuity,Reporting periods must span consecutive calendar months without historical gaps,90,0,PASS,MEDIUM
