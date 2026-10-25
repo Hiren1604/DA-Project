@@ -52,8 +52,8 @@
     </nav>
 
     <div class="flex items-center space-x-3">
-      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Local data available
+      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-950 text-cyan-300 border border-cyan-800" title="Source: RBI DBIE Tables 15 and 16. Historical snapshot archived in this project and served locally; it is not a live RBI connection." aria-label="RBI DBIE historical snapshot, served locally, not a live feed">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-1.5"></span> RBI DBIE snapshot
       </span>
       <a href="/docs" target="_blank" class="text-xs text-slate-400 hover:text-cyan-400 underline">Swagger API</a>
     </div>
@@ -97,7 +97,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <section class="card p-5"><p class="text-[10px] font-bold tracking-[.16em] uppercase text-cyan-300">DATA SCOPE</p>
           <h3 class="text-lg font-bold text-white mt-2">What is in this dashboard?</h3>
-          <p class="text-sm text-slate-300 leading-relaxed mt-2">The core monthly series is RBI DBIE Table 16, industry-wise deployment of bank credit. Table 15 is a separate major-sector series used for broader context; it is not added into Table 16 totals.</p>
+          <p class="text-sm text-slate-300 leading-relaxed mt-2">The source is RBI DBIE: Table 16 reports industry-wise bank credit; Table 15 is a separate major-sector series and is not added into Table 16 totals. The Jan 2019–Jun 2026 files are bundled historical snapshots served locally for repeatable analysis; this dashboard does not fetch live from RBI.</p>
           <p class="text-xs text-slate-400 mt-3">CreditLens describes aggregate scheduled commercial bank lending by sector. It does not measure borrower defaults or individual credit risk.</p></section>
         <section class="card p-5"><p class="text-[10px] font-bold tracking-[.16em] uppercase text-teal-300">A SIMPLE READING PATH</p>
           <h3 class="text-lg font-bold text-white mt-2">Start broad, then investigate.</h3>

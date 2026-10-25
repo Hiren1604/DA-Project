@@ -47,7 +47,7 @@
               {
                 "textRuns": [
                   {
-                    "value": "The core series is Table 16: monthly credit outstanding by industry. Table 15 is a separate major-sector series that provides broader context; it is not folded into Table 16 totals.",
+                    "value": "The source is RBI DBIE: Table 16 reports industry-wise bank credit; Table 15 is a separate major-sector series and is not added into Table 16 totals. The Jan 2019\u2013Jun 2026 files are bundled historical snapshots served locally for repeatable analysis; this report does not fetch live from RBI.",
                     "textStyle": {
                       "fontFamily": "Segoe UI",
                       "fontSize": "15px",
