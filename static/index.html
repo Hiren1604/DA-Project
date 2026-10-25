@@ -4,18 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CreditLens — Indian Banking & Credit Portfolio Analytics</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { background-color: #0B1120; color: #F8FAFC; font-family: 'Segoe UI', system-ui, sans-serif; }
-    .card { background-color: #131F37; border: 1px solid #1E293B; border-radius: 0.75rem; }
-    .card-header { border-bottom: 1px solid #1E293B; }
-    .accent-cyan { color: #06B6D4; }
-    .accent-teal { color: #14B8A6; }
-    .accent-amber { color: #F59E0B; }
-    .tab-btn.active { background-color: #1E293B; color: #06B6D4; border-bottom: 2px solid #06B6D4; }
+    :root {
+      --cl-ink: #101C30; --cl-slate: #233B59; --cl-canvas: #0D1525; --cl-surface: #15243A;
+      --cl-border: #263B55; --cl-cyan: #06B6D4; --cl-teal: #14B8A6; --cl-amber: #F59E0B;
+      --cl-blue: #4F86F7; --cl-violet: #A78BFA; --cl-text: #F8FAFC; --cl-muted: #A7B4C5;
+      --cl-font-ui: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+      --cl-font-data: 'Cascadia Code', Consolas, monospace;
+    }
+    body { background-color: var(--cl-canvas); color: var(--cl-text); font-family: var(--cl-font-ui); font-variant-numeric: tabular-nums; }
+    .card { background-color: var(--cl-surface); border: 1px solid var(--cl-border); border-radius: 0.85rem; box-shadow: 0 12px 30px rgba(2, 8, 23, .18); }
+    .card-header { border-bottom: 1px solid var(--cl-border); }
+    .accent-cyan { color: var(--cl-cyan); } .accent-teal { color: var(--cl-teal); } .accent-amber { color: var(--cl-amber); }
+    .tab-btn.active { background-color: #233B59; color: #67E8F9; border-bottom: 2px solid var(--cl-cyan); }
+    .intro-hero { background: radial-gradient(ellipse at 92% 12%, rgba(6,182,212,.25), transparent 36%), linear-gradient(118deg, #101C30 0%, #172A45 65%, #164E63 140%); border: 1px solid #2C4562; }
+    .intro-card { min-height: 176px; background: linear-gradient(145deg, rgba(35,59,89,.82), rgba(21,36,58,.96)); border: 1px solid #304967; text-decoration: none; }
+    .intro-kicker { color: #67E8F9; letter-spacing: .16em; }
+    .intro-link { color: #67E8F9; } .intro-link:hover { color: #99F6E4; }
+    .tab-btn:focus-visible, .intro-link:focus-visible, .intro-card:focus-visible { outline: 2px solid #F59E0B; outline-offset: 3px; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -31,8 +42,9 @@
     </div>
 
     <!-- Navigation Tabs -->
-    <nav class="flex space-x-1" id="navTabs">
-      <button onclick="switchTab('overview')" class="tab-btn active px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-overview">Executive Overview</button>
+    <nav class="flex space-x-1 overflow-x-auto" id="navTabs">
+      <button onclick="switchTab('intro')" class="tab-btn active px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-intro">Introduction</button>
+      <button onclick="switchTab('overview')" class="tab-btn px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-overview">Executive Overview</button>
       <button onclick="switchTab('explorer')" class="tab-btn px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-explorer">Sector Explorer</button>
       <button onclick="switchTab('concentration')" class="tab-btn px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-concentration">Concentration & HHI</button>
       <button onclick="switchTab('quality')" class="tab-btn px-4 py-2 text-xs font-semibold rounded-t-lg transition hover:text-cyan-400" id="tab-quality">Data Quality & QA</button>
@@ -50,8 +62,54 @@
   <!-- Main Content -->
   <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
 
+
+    <!-- TAB 0: INTRODUCTION -->
+    <section id="view-intro" class="tab-content space-y-6">
+      <div class="intro-hero rounded-2xl p-7 md:p-10 relative overflow-hidden">
+        <div class="max-w-4xl relative z-10">
+          <p class="intro-kicker text-[10px] md:text-xs font-bold uppercase mb-4">RBI INDUSTRY CREDIT MONITOR &nbsp; / &nbsp; START HERE</p>
+          <h2 class="text-3xl md:text-5xl font-bold leading-tight max-w-3xl">Follow where India’s industrial bank credit is going.</h2>
+          <p class="text-sm md:text-base text-slate-300 leading-relaxed mt-4 max-w-3xl">CreditLens turns monthly RBI sector data into a clear view of credit scale, industry exposure, growth and concentration.</p>
+          <div class="flex flex-wrap gap-3 mt-7">
+            <button onclick="switchTab('overview')" class="rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-5 py-2.5 text-sm font-bold transition">Explore the overview <span aria-hidden="true">→</span></button>
+            <button onclick="switchTab('methodology')" class="rounded-lg border border-slate-500 hover:border-cyan-400 text-slate-100 px-5 py-2.5 text-sm font-semibold transition">How the data is built</button>
+          </div>
+        </div>
+        <div class="hidden lg:grid grid-cols-2 gap-3 absolute right-10 top-10 w-72 opacity-90" aria-hidden="true">
+          <div class="h-24 rounded-xl border border-cyan-300/30 bg-cyan-400/10"></div><div class="h-24 rounded-xl border border-teal-300/30 bg-teal-400/10 mt-8"></div>
+          <div class="h-24 rounded-xl border border-amber-300/30 bg-amber-400/10 -mt-4"></div><div class="h-24 rounded-xl border border-blue-300/30 bg-blue-400/10"></div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a href="#overview" onclick="switchTab('overview'); return false;" class="intro-card block rounded-xl p-5 text-left transition hover:-translate-y-0.5 hover:border-cyan-400">
+          <span class="intro-kicker text-[10px] font-bold uppercase">01 / SCALE</span><h3 class="text-lg font-bold text-white mt-2">How large is industrial credit?</h3>
+          <p class="text-sm text-slate-300 mt-2 leading-relaxed">Read the total-credit trend and monthly or yearly growth in the Executive Overview.</p><span class="intro-link text-xs font-bold inline-block mt-4">Open overview →</span>
+        </a>
+        <a href="#explorer" onclick="switchTab('explorer'); return false;" class="intro-card block rounded-xl p-5 text-left transition hover:-translate-y-0.5 hover:border-teal-400">
+          <span class="text-teal-300 text-[10px] font-bold uppercase tracking-[.16em]">02 / ALLOCATION</span><h3 class="text-lg font-bold text-white mt-2">Which industries hold the credit?</h3>
+          <p class="text-sm text-slate-300 mt-2 leading-relaxed">Compare sector exposures and follow a selected industry through time.</p><span class="text-teal-300 text-xs font-bold inline-block mt-4">Open sector explorer →</span>
+        </a>
+        <a href="#concentration" onclick="switchTab('concentration'); return false;" class="intro-card block rounded-xl p-5 text-left transition hover:-translate-y-0.5 hover:border-amber-400">
+          <span class="text-amber-300 text-[10px] font-bold uppercase tracking-[.16em]">03 / CONCENTRATION</span><h3 class="text-lg font-bold text-white mt-2">Is exposure spread or concentrated?</h3>
+          <p class="text-sm text-slate-300 mt-2 leading-relaxed">Use HHI and top-three share to understand the portfolio mix.</p><span class="text-amber-300 text-xs font-bold inline-block mt-4">Open concentration view →</span>
+        </a>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <section class="card p-5"><p class="text-[10px] font-bold tracking-[.16em] uppercase text-cyan-300">DATA SCOPE</p>
+          <h3 class="text-lg font-bold text-white mt-2">What is in this dashboard?</h3>
+          <p class="text-sm text-slate-300 leading-relaxed mt-2">The core monthly series is RBI DBIE Table 16, industry-wise deployment of bank credit. Table 15 is a separate major-sector series used for broader context; it is not added into Table 16 totals.</p>
+          <p class="text-xs text-slate-400 mt-3">CreditLens describes aggregate scheduled commercial bank lending by sector. It does not measure borrower defaults or individual credit risk.</p></section>
+        <section class="card p-5"><p class="text-[10px] font-bold tracking-[.16em] uppercase text-teal-300">A SIMPLE READING PATH</p>
+          <h3 class="text-lg font-bold text-white mt-2">Start broad, then investigate.</h3>
+          <ol class="mt-3 space-y-2 text-sm text-slate-300"><li><span class="text-cyan-300 font-bold mr-2">01</span>Executive Overview — headline KPIs and the full credit trend.</li>
+            <li><span class="text-teal-300 font-bold mr-2">02</span>Sector Explorer — compare and inspect individual industries.</li>
+            <li><span class="text-amber-300 font-bold mr-2">03</span>Concentration & QA — review HHI, top-three share and data checks.</li></ol>
+          <p class="text-xs text-slate-400 mt-3">Use mutually exclusive sector rows for portfolio shares so parent totals are not counted twice.</p></section>
+      </div>
+    </section>
+
     <!-- TAB 1: EXECUTIVE OVERVIEW -->
-    <div id="view-overview" class="tab-content space-y-6">
+    <div id="view-overview" class="tab-content hidden space-y-6">
       <!-- KPI Ribbon -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="card p-4">
@@ -215,6 +273,25 @@
   <!-- Dashboard JavaScript Logic -->
   <script>
     let charts = {};
+    async function applyCreditLensDesign() {
+      try {
+        const design = await fetchJson('/static/creditlens-design.json');
+        const p = design.palette;
+        const vars = {
+          '--cl-ink': p.ink, '--cl-slate': p.slate, '--cl-canvas': p.canvasDark,
+          '--cl-surface': p.surfaceDark, '--cl-border': p.borderDark, '--cl-cyan': p.cyan,
+          '--cl-teal': p.teal, '--cl-amber': p.amber, '--cl-blue': p.blue,
+          '--cl-violet': p.violet, '--cl-text': p.text, '--cl-muted': p.muted
+        };
+        for (const [name, value] of Object.entries(vars)) document.documentElement.style.setProperty(name, value);
+        Chart.defaults.font.family = design.fonts.ui;
+        Chart.defaults.color = '#CBD5E1';
+        Chart.defaults.plugins.tooltip.backgroundColor = p.ink;
+        Chart.defaults.plugins.tooltip.titleFont = { family: design.fonts.heading, weight: '600' };
+      } catch (err) {
+        console.warn('CreditLens design tokens could not be loaded; using the built-in theme.', err);
+      }
+    }
 
     async function fetchJson(url) {
       const response = await fetch(url);
@@ -473,7 +550,7 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', initDashboard);
+    window.addEventListener('DOMContentLoaded', async () => { await applyCreditLensDesign(); await initDashboard(); });
   </script>
 </body>
 </html>

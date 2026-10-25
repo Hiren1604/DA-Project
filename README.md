@@ -234,7 +234,7 @@ uvicorn src.api:app --host 127.0.0.1 --port 8000 --reload
 
 ## 8. Reconciliation Artifacts
 
-The Excel workbook compares independently calculated pandas results, SQLite view results, and live Excel formulas for sample sector-month rows. Excel formulas recalculate when the workbook is opened. The Power BI files in this repository are design and DAX specifications; no finished PBIX report has been verified.
+The Excel workbook compares independently calculated pandas results, SQLite view results, and live Excel formulas for sample sector-month rows. Excel formulas recalculate when the workbook is opened. An editable four-page Power BI Desktop project (PBIP) is included under `powerbi/CreditLens.Project`, with an Introduction landing page, three analysis pages, and the imported CreditLens theme. A PBIX binary is not included.
 
 The workbook is available at [`excel/kpi_reconciliation.xlsx`](excel/kpi_reconciliation.xlsx).
 
@@ -261,7 +261,7 @@ The workbook is available at [`excel/kpi_reconciliation.xlsx`](excel/kpi_reconci
 - [x] Five documented SQL KPI views using calendar-aligned interval joins.
 - [x] Four complete, runnable Jupyter Notebooks covering profiling, EDA, sector trends, and statistical concentration.
 - [x] Excel reconciliation workbook (`kpi_reconciliation.xlsx`) comparing pandas, SQLite, and Excel formulas.
-- [x] Three-page Power BI dashboard design specification and DAX measures (no PBIX included).
+- [x] Four-page editable Power BI project with an Introduction landing page, three analysis pages, imported theme JSON, and DAX measure documentation.
 - [x] Four publication-quality visual charts generated following financial design palette.
 - [x] FastAPI REST endpoints exposing metadata, summaries, trends, and comparisons.
 - [x] Twenty unit and integration tests passing in under 2 seconds.

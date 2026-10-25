@@ -17,7 +17,7 @@ The interface utilizes an intentional Indian financial palette with high contras
 
 ---
 
-## 2. Three-Page Report Architecture
+## 2. Report Architecture: Introduction + Three Analysis Pages
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────────┐
@@ -27,6 +27,11 @@ The interface utilizes an intentional Indian financial palette with high contras
 │ Global Slicer: Reporting Period [ June 2026 v ]    Hierarchy Filter: [ Level 1 v]│
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+### Introduction — Start Here
+- **Role:** Default landing page for new readers; it explains the purpose and safe reading order before analysis.
+- **Content:** Three question-led routes for credit scale, sector allocation and concentration; a short Table 15 / Table 16 scope note; and hierarchy double-counting guidance.
+- **Visual style:** CreditLens-Institutional imported theme, with Segoe UI typography, navy hero, cyan, teal and amber accents.
 
 ### Page 1 — Executive Credit Overview
 - **User Question:** What is the overall scale and expansion rate of Indian industrial bank credit?

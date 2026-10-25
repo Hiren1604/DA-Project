@@ -11,6 +11,7 @@ from contextlib import closing
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="CreditLens API",
@@ -41,7 +42,9 @@ def validate_month(month: Optional[str], conn: sqlite3.Connection) -> str:
     return month
 
 
-STATIC_INDEX = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html")
+STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+STATIC_INDEX = os.path.join(STATIC_DIR, "index.html")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 @app.get("/", response_class=FileResponse)

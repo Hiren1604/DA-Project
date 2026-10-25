@@ -66,3 +66,4 @@ powerbi/CreditLens.pbix.pbip
 powerbi/Power BI Desktop.Report/
 powerbi/Power BI Desktop.SemanticModel/
 powerbi/Power BI Desktop.pbip
+.playwright-cli/

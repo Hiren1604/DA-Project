@@ -1,0 +1,45 @@
+{
+  "name": "CreditLens Institutional",
+  "version": "1.0",
+  "description": "Shared brand tokens for CreditLens Power BI and HTML experiences.",
+  "palette": {
+    "ink": "#101C30",
+    "slate": "#233B59",
+    "canvasDark": "#0D1525",
+    "surfaceDark": "#15243A",
+    "borderDark": "#263B55",
+    "canvasLight": "#F8FAFC",
+    "surfaceLight": "#FFFFFF",
+    "borderLight": "#CBD5E1",
+    "cyan": "#06B6D4",
+    "cyanLight": "#67E8F9",
+    "teal": "#14B8A6",
+    "tealLight": "#5EEAD4",
+    "amber": "#F59E0B",
+    "amberLight": "#FCD34D",
+    "blue": "#4F86F7",
+    "violet": "#A78BFA",
+    "text": "#F8FAFC",
+    "muted": "#A7B4C5",
+    "bodyLight": "#334155"
+  },
+  "fonts": {
+    "ui": "'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif",
+    "heading": "'Segoe UI Semibold', 'Segoe UI', sans-serif",
+    "numeric": "'Cascadia Code', Consolas, monospace"
+  },
+  "powerBiDataColors": [
+    "#06B6D4",
+    "#14B8A6",
+    "#F59E0B",
+    "#2563EB",
+    "#8B5CF6",
+    "#EF4444",
+    "#0F766E",
+    "#F97316",
+    "#0891B2",
+    "#4F46E5",
+    "#65A30D",
+    "#DB2777"
+  ]
+}
