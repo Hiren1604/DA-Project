@@ -1,0 +1,263 @@
+table Credit
+	lineageTag: cc718e87-6a3d-4ee8-9331-7d3c2db9ca7b
+
+	measure 'Total Industry Credit Cr' = CALCULATE(MAX(Credit[credit_outstanding_cr]), Credit[hierarchy_level] = "grand_total")
+		formatString: #,0.00
+		lineageTag: 5c156fbc-e806-481e-8025-896b7b9638f0
+
+	measure 'YoY Credit Growth' = CALCULATE(MAX(Credit[yoy_growth_pct]), Credit[hierarchy_level] = "grand_total") / 100
+		formatString: 0.0%
+		lineageTag: 2a534614-b7bc-4e1f-9a6a-1f32bf6b2345
+
+	measure 'MoM Credit Growth' = CALCULATE(MAX(Credit[mom_growth_pct]), Credit[hierarchy_level] = "grand_total") / 100
+		formatString: 0.0%
+		lineageTag: fd423d0e-6580-4207-9341-585561f54da5
+
+	measure HHI = MAX(Credit[hhi_index])
+		formatString: #,0.0
+		lineageTag: fa3df108-911c-421b-87c0-3a8253359894
+
+	measure 'Top 3 Sector Share' = MAX(Credit[top3_concentration_share_pct]) / 100
+		formatString: 0.0%
+		lineageTag: ebf405e5-96bc-446c-b3d5-3826b973b98c
+
+	measure 'Exclusive Sector Credit Cr' = CALCULATE(SUM(Credit[credit_outstanding_cr]), Credit[is_mutually_exclusive] = TRUE())
+		formatString: #,0.00
+		lineageTag: d34c54d9-f071-4998-a26a-f0cf64d6c7ba
+
+	measure 'Credit Index Base 100' = MAX(Credit[credit_indexed_base100])
+		formatString: #,0.0
+		lineageTag: c8cbd47c-559b-4b26-a0d4-c8a62e26d215
+
+	measure 'Data Exceptions' = CALCULATE(COUNTROWS(Credit), Credit[quality_status] <> "valid")
+		formatString: #,0
+		lineageTag: 88c4efdd-f01f-4f43-8c00-ad9d6f430af5
+
+	column observation_id
+		dataType: int64
+		lineageTag: 3a2135f3-a681-43fa-80d6-f4a285fb674f
+		summarizeBy: sum
+		sourceColumn: observation_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column reporting_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 0e5714b5-8fde-425b-b8fd-edd5e6bc02a1
+		summarizeBy: none
+		sourceColumn: reporting_date
+
+		variation Variation
+			isDefault
+			relationship: 2fec297a-5e58-4a58-9bb6-293c900facef
+			defaultHierarchy: LocalDateTable_fbd9ac59-c497-4fab-a006-377331de1a07.'Date Hierarchy'
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column reporting_month
+		dataType: string
+		lineageTag: 09c7bf14-9200-42f2-a2f6-c293e2acec1b
+		summarizeBy: none
+		sourceColumn: reporting_month
+
+	column reporting_year
+		dataType: int64
+		lineageTag: 1cd10545-ba78-400a-8233-61db0d202512
+		summarizeBy: sum
+		sourceColumn: reporting_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column reporting_quarter
+		dataType: string
+		lineageTag: b089037d-255e-4292-8e42-055b6862fd60
+		summarizeBy: none
+		sourceColumn: reporting_quarter
+
+	column sector_code
+		dataType: string
+		lineageTag: 0c64a376-0815-4f88-9dea-d2d4c8f86b98
+		summarizeBy: none
+		sourceColumn: sector_code
+
+	column sector_name
+		dataType: string
+		lineageTag: e1f89395-e4d8-457f-a0b3-c5d8a47b8851
+		summarizeBy: none
+		sourceColumn: sector_name
+
+	column parent_code
+		dataType: string
+		lineageTag: f418b6a7-09c1-4995-aa6a-52fc7c248eea
+		summarizeBy: none
+		sourceColumn: parent_code
+
+	column parent_sector_name
+		dataType: string
+		lineageTag: 0cd70ded-3e5b-4e1a-9512-9aa493cac206
+		summarizeBy: none
+		sourceColumn: parent_sector_name
+
+	column hierarchy_level
+		dataType: string
+		lineageTag: bd3fcf52-ff2c-409e-8977-291dc9f31157
+		summarizeBy: none
+		sourceColumn: hierarchy_level
+
+	column is_parent_total
+		dataType: boolean
+		lineageTag: 6e2c36d3-976f-4036-a5ea-6779fb1cd396
+		summarizeBy: none
+		sourceColumn: is_parent_total
+
+	column is_mutually_exclusive
+		dataType: boolean
+		lineageTag: e3ebb3f5-f04f-4270-9022-9ae191653ca3
+		summarizeBy: none
+		sourceColumn: is_mutually_exclusive
+
+	column credit_outstanding_cr
+		dataType: double
+		lineageTag: 32428c21-1c9f-4091-8e2c-a0ec3b756889
+		summarizeBy: sum
+		sourceColumn: credit_outstanding_cr
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit
+		dataType: string
+		lineageTag: a335921d-cdb4-40df-8b4e-cdc208383461
+		summarizeBy: none
+		sourceColumn: unit
+
+	column quality_status
+		dataType: string
+		lineageTag: 19f3ef3d-eafc-4a42-9821-d1c38d78c180
+		summarizeBy: none
+		sourceColumn: quality_status
+
+	column exception_reason
+		dataType: string
+		lineageTag: 2fb65639-4c6e-4a36-a3fa-5ddec32f378d
+		summarizeBy: none
+		sourceColumn: exception_reason
+
+	column grand_total_industry_credit_cr
+		dataType: double
+		lineageTag: ceec4988-9ce3-414b-a016-7de7d4ee7038
+		summarizeBy: sum
+		sourceColumn: grand_total_industry_credit_cr
+
+		annotation SummarizationSetBy = Automatic
+
+	column sector_share_pct
+		dataType: double
+		lineageTag: c29f1b73-efd9-478d-9754-4b694d3dc78f
+		summarizeBy: sum
+		sourceColumn: sector_share_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column previous_month_credit_cr
+		dataType: double
+		lineageTag: f2d5f346-aa9f-4094-aff0-1958e8097c41
+		summarizeBy: sum
+		sourceColumn: previous_month_credit_cr
+
+		annotation SummarizationSetBy = Automatic
+
+	column previous_year_credit_cr
+		dataType: double
+		lineageTag: 246979ab-56d9-4b4c-baf9-1f094b22e25a
+		summarizeBy: sum
+		sourceColumn: previous_year_credit_cr
+
+		annotation SummarizationSetBy = Automatic
+
+	column mom_change_cr
+		dataType: double
+		lineageTag: 600bfcd8-964a-458c-9994-5b1e228dc1b9
+		summarizeBy: sum
+		sourceColumn: mom_change_cr
+
+		annotation SummarizationSetBy = Automatic
+
+	column mom_growth_pct
+		dataType: double
+		lineageTag: b58cbc67-3804-4eaa-9c27-6afbe8a99b74
+		summarizeBy: sum
+		sourceColumn: mom_growth_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column yoy_change_cr
+		dataType: double
+		lineageTag: f4214e22-5168-4f60-80cf-a569a0fd5f11
+		summarizeBy: sum
+		sourceColumn: yoy_change_cr
+
+		annotation SummarizationSetBy = Automatic
+
+	column yoy_growth_pct
+		dataType: double
+		lineageTag: 91f3140f-145b-434a-b753-34a9bb3ca309
+		summarizeBy: sum
+		sourceColumn: yoy_growth_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column base_credit_2019_01_cr
+		dataType: double
+		lineageTag: df7024d0-6786-4371-8e94-eae2feee083a
+		summarizeBy: sum
+		sourceColumn: base_credit_2019_01_cr
+
+		annotation SummarizationSetBy = Automatic
+
+	column credit_indexed_base100
+		dataType: double
+		lineageTag: 4142785c-6539-4eb7-98d9-df7b5c89067a
+		summarizeBy: sum
+		sourceColumn: credit_indexed_base100
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_historical_peak
+		dataType: boolean
+		lineageTag: ce04d5fc-15bd-47fd-9a2a-b1960581580a
+		summarizeBy: none
+		sourceColumn: is_historical_peak
+
+	column hhi_index
+		dataType: double
+		lineageTag: d10faba3-a8ae-4bf1-b750-08c3adb1a8d2
+		summarizeBy: sum
+		sourceColumn: hhi_index
+
+		annotation SummarizationSetBy = Automatic
+
+	column top3_concentration_share_pct
+		dataType: double
+		lineageTag: dd88aef5-22a0-4187-924a-6f07866a6150
+		summarizeBy: sum
+		sourceColumn: top3_concentration_share_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column largest_sector
+		dataType: string
+		lineageTag: eabfa930-b7ba-4cb2-bfc9-88bdec0607d0
+		summarizeBy: none
+		sourceColumn: largest_sector
+
+	partition Credit = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:/Users/Hiren/OneDrive/Desktop/New folder/data/processed/sector_monthly_metrics.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Typed = Table.TransformColumnTypes(Headers, {{"observation_id", Int64.Type}, {"reporting_date", type date}, {"reporting_month", type text}, {"reporting_year", Int64.Type}, {"reporting_quarter", type text}, {"sector_code", type text}, {"sector_name", type text}, {"parent_code", type text}, {"parent_sector_name", type text}, {"hierarchy_level", type text}, {"is_parent_total", type logical}, {"is_mutually_exclusive", type logical}, {"credit_outstanding_cr", type number}, {"unit", type text}, {"quality_status", type text}, {"exception_reason", type text}, {"grand_total_industry_credit_cr", type number}, {"sector_share_pct", type number}, {"previous_month_credit_cr", type number}, {"previous_year_credit_cr", type number}, {"mom_change_cr", type number}, {"mom_growth_pct", type number}, {"yoy_change_cr", type number}, {"yoy_growth_pct", type number}, {"base_credit_2019_01_cr", type number}, {"credit_indexed_base100", type number}, {"is_historical_peak", type logical}, {"hhi_index", type number}, {"top3_concentration_share_pct", type number}, {"largest_sector", type text}}, "en-US")
+				in
+				    Typed
+

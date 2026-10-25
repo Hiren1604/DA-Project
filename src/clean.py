@@ -190,12 +190,12 @@ def run_cleaning(data_dir: str = "data") -> tuple[pd.DataFrame, pd.DataFrame]:
     t16_raw_path = os.path.join(raw_dir, "rbi_industry_credit_long_raw.csv")
     t15_raw_path = os.path.join(raw_dir, "rbi_major_sectors_long_raw.csv")
 
-    df_t16_raw = pd.read_csv(t16_raw_path)
+    df_t16_raw = pd.read_csv(t16_raw_path, dtype={"item_code": str, "parent_code": str})
     df_t16_clean = clean_industry_credit(df_t16_raw)
     t16_clean_path = os.path.join(proc_dir, "credit_clean.csv")
     df_t16_clean.to_csv(t16_clean_path, index=False, encoding="utf-8")
 
-    df_t15_raw = pd.read_csv(t15_raw_path)
+    df_t15_raw = pd.read_csv(t15_raw_path, dtype={"item_code": str, "parent_code": str})
     df_t15_clean = clean_major_sectors(df_t15_raw)
     t15_clean_path = os.path.join(proc_dir, "major_sectors_clean.csv")
     df_t15_clean.to_csv(t15_clean_path, index=False, encoding="utf-8")

@@ -44,13 +44,13 @@ All 3,870 industry observations successfully passed 6 deterministic data validat
 
 ### 4.3 Market Concentration Trajectory
 - **Herfindahl-Hirschman Index (HHI):**
-  - January 2019: **1,858.9 points** (Highly concentrated, driven by Power and Infrastructure loans).
+  - January 2019: **1,713.94 points** (computed from the 19 mutually exclusive Level-1 industry shares).
   - June 2023: **1,412.5 points** (Gradual diversification into manufacturing and chemicals).
   - June 2026: **1,431.3 points** (Stabilized in the moderately concentrated range).
 - **Top 3 Sectors Concentration Share:**
-  - January 2019: **55.94%** (Infrastructure, Basic Metals, Textiles).
+  - January 2019: **56.84%** (Infrastructure, Basic Metals, Textiles).
   - June 2026: **50.72%** (Infrastructure, Basic Metals, Other Industries).
-  - Concentration dropped by **5.22 percentage points**, reflecting steady diversification across mid-tier engineering and manufacturing sectors.
+  - Concentration dropped by **6.12 percentage points**, reflecting steady diversification across mid-tier engineering and manufacturing sectors.
 
 ---
 

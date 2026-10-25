@@ -52,8 +52,8 @@ def validate_dataset(df: pd.DataFrame, dataset_name: str = "Industry Credit") ->
         "description": "Credit outstanding must have a non-null numeric value",
         "records_evaluated": total_records,
         "exceptions_count": len(missing_amounts),
-        "status": "PASS" if len(missing_amounts) == 0 else "FAIL",
-        "severity": "HIGH"
+        "status": "PASS" if len(missing_amounts) == 0 else ("WARNING" if dataset_name == "Major Sectors" else "FAIL"),
+        "severity": "MEDIUM" if dataset_name == "Major Sectors" and len(missing_amounts) else "HIGH"
     })
     for _, row in missing_amounts.iterrows():
         exceptions.append({
@@ -165,6 +165,34 @@ def validate_dataset(df: pd.DataFrame, dataset_name: str = "Industry Credit") ->
                 "error_details": f"Hierarchy discrepancy of {diff_val:.2f} Cr on {dt_val}",
                 "review_status": "open"
             })
+
+    # 7. Complete sector-by-month panel: every observed category must occur each month.
+    months = sorted(df["reporting_month"].dropna().astype(str).unique())
+    sectors = sorted(df["sector_code"].dropna().astype(str).unique())
+    expected = pd.MultiIndex.from_product([months, sectors], names=["reporting_month", "sector_code"])
+    observed = pd.MultiIndex.from_frame(
+        df[["reporting_month", "sector_code"]].astype(str).drop_duplicates()
+    )
+    missing_keys = expected.difference(observed)
+    checks.append({
+        "dataset": dataset_name,
+        "rule_id": "VR-07",
+        "rule_name": "Sector-Month Panel Completeness",
+        "description": "Every observed sector code must have a record in every reporting month",
+        "records_evaluated": len(expected),
+        "exceptions_count": len(missing_keys),
+        "status": "PASS" if len(missing_keys) == 0 else "FAIL",
+        "severity": "HIGH"
+    })
+    for month, code in missing_keys:
+        exceptions.append({
+            "observation_id": 0,
+            "dataset": dataset_name,
+            "rule_id": "VR-07",
+            "severity": "HIGH",
+            "error_details": f"Missing sector-month record: sector {code}, month {month}",
+            "review_status": "open"
+        })
 
     df_exceptions = pd.DataFrame(exceptions)
     if df_exceptions.empty:

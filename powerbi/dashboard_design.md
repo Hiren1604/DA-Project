@@ -54,7 +54,7 @@ The interface utilizes an intentional Indian financial palette with high contras
 - **Visuals:**
   1. **Indexed Sector Growth Chart:** Base-100 indexed line chart from January 2019 to June 2026 comparing relative expansion.
   2. **Monthly YoY Growth Heatmap:** Month × Year grid highlighting credit cycles, post-pandemic recovery, and the July 2023 merger step-up.
-  3. **Data Quality & Exception Audit Grid:** Summary of the 11 validation checks (VR-01 to VR-06) showing 0 errors in Industry Credit and the isolated quarantine of Priority Sector Memo rows.
+  3. **Data Quality & Exception Audit Grid:** Summary of 13 validation checks (VR-01 to VR-07 across both datasets), showing industry quality results and quarantined Table 15 memo rows.
   4. **Analyst Notes & Methodology Disclaimers:** Visible caveats regarding aggregate bank series vs borrower default risk, and SCB reporting scope.
 
 ---

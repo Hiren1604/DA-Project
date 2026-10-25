@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "bae23c799fef49b888d7",
+  "position": {
+    "x": 595,
+    "y": 20,
+    "z": 1000,
+    "width": 280,
+    "height": 90,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "Top 3 Sector Share"
+                }
+              },
+              "queryRef": "Credit.Top 3 Sector Share",
+              "nativeQueryRef": "Top 3 Sector Share"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Top-three share'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

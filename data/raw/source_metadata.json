@@ -2,7 +2,8 @@
   "project": "CreditLens - Indian Banking & Credit Portfolio Analytics",
   "publisher": "Reserve Bank of India (RBI)",
   "source_portal": "Database on Indian Economy (DBIE)",
-  "downloaded_at_utc": "2026-10-14T11:17:59.750026+00:00",
+  "ingested_at_utc": "2026-10-25T17:12:13.759516+00:00",
+  "archive_mode": "bundled_archive",
   "ingestion_version": "1.0.0",
   "modules": {
     "module_a_industry_credit": {

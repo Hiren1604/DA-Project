@@ -1,0 +1,5 @@
+relationship 2fec297a-5e58-4a58-9bb6-293c900facef
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Credit.reporting_date
+	toColumn: LocalDateTable_fbd9ac59-c497-4fab-a006-377331de1a07.Date
+

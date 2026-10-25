@@ -1,0 +1,116 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "3b783efc263740b29800",
+  "position": {
+    "x": 625,
+    "y": 430,
+    "z": 1000,
+    "width": 630,
+    "height": 250,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "sector_name"
+                }
+              },
+              "queryRef": "Credit.sector_name",
+              "nativeQueryRef": "sector_name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "credit_outstanding_cr"
+                }
+              },
+              "queryRef": "Credit.credit_outstanding_cr",
+              "nativeQueryRef": "credit_outstanding_cr"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "sector_share_pct"
+                }
+              },
+              "queryRef": "Credit.sector_share_pct",
+              "nativeQueryRef": "sector_share_pct"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "mom_growth_pct"
+                }
+              },
+              "queryRef": "Credit.mom_growth_pct",
+              "nativeQueryRef": "mom_growth_pct"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "yoy_growth_pct"
+                }
+              },
+              "queryRef": "Credit.yoy_growth_pct",
+              "nativeQueryRef": "yoy_growth_pct"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Sector exposure, share and growth'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

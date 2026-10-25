@@ -42,7 +42,18 @@ def run_pipeline(data_dir: str = "data", db_path: str = "data/processed/credit_l
     val_report = run_validation(data_dir=data_dir)
     total_checks = len(val_report)
     passed_checks = len(val_report[val_report["status"] == "PASS"])
-    print(f" -> Validation complete ({time.time() - t0:.2f}s): {passed_checks}/{total_checks} rule checks PASSED.")
+    warning_checks = len(val_report[val_report["status"] == "WARNING"])
+    failed_checks = len(val_report[val_report["status"] == "FAIL"])
+    print(f" -> Validation complete ({time.time() - t0:.2f}s): {passed_checks} PASS, {warning_checks} WARNING, {failed_checks} FAIL ({total_checks} checks).")
+    blocking = val_report[(val_report["dataset"] == "Industry Credit") &
+                          (val_report["severity"].isin(["CRITICAL", "HIGH"])) &
+                          (val_report["status"] == "FAIL")]
+    if not blocking.empty:
+        details = "; ".join(
+            f"{r.rule_id} {r.rule_name}: {r.exceptions_count} exception(s)"
+            for r in blocking.itertuples()
+        )
+        raise RuntimeError(f"Industry-credit quality gate failed; KPI/database build stopped: {details}")
 
     # 4. Metric Transformations & Derived KPIs
     print("\n[Step 4/5] Computing MoM/YoY growth, portfolio shares, and HHI concentration...")

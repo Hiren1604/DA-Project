@@ -1,0 +1,79 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "e9e4b4f6d5b942f3836d",
+  "position": {
+    "x": 825,
+    "y": 145,
+    "z": 1000,
+    "height": 530,
+    "width": 430,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "sector_name"
+                }
+              },
+              "queryRef": "Credit.sector_name",
+              "nativeQueryRef": "sector_name",
+              "active": true
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "Exclusive Sector Credit Cr"
+                }
+              },
+              "queryRef": "Credit.Exclusive Sector Credit Cr",
+              "nativeQueryRef": "Exclusive Sector Credit Cr"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Credit by sector (mutually exclusive rows)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

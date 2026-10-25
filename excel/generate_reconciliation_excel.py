@@ -1,4 +1,4 @@
-"""
+﻿"""
 Generator script for excel/kpi_reconciliation.xlsx
 Builds a multi-tab professional financial reconciliation workbook using openpyxl,
 cross-verifying Python, SQL, and Excel formula outputs for CreditLens KPIs.
@@ -12,9 +12,19 @@ import pandas as pd
 import sqlite3
 
 
+def reconciliation_status(values: list[float | None], tolerance: float = 0.01) -> str:
+    """Compare independent results; return MISMATCH if any required value differs."""
+    if not values or any(value is None for value in values):
+        return "INCOMPLETE"
+    return "MATCH" if max(values) - min(values) < tolerance else "MISMATCH"
+
+
 def generate_excel_reconciliation(data_dir: str = "data", output_path: str = "excel/kpi_reconciliation.xlsx"):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     wb = openpyxl.Workbook()
+    wb.calculation.fullCalcOnLoad = True
+    wb.calculation.forceFullCalc = True
+    wb.calculation.calcMode = "auto"
     # Remove default sheet
     wb.remove(wb.active)
 
@@ -46,20 +56,20 @@ def generate_excel_reconciliation(data_dir: str = "data", output_path: str = "ex
 
     # Title block
     ws1.merge_cells("A1:G2")
-    ws1["A1"] = "CREDITLENS — FINANCIAL KPI RECONCILIATION & AUDIT WORKBOOK"
+    ws1["A1"] = "CREDITLENS â€” FINANCIAL KPI RECONCILIATION & AUDIT WORKBOOK"
     ws1["A1"].font = white_title_font
     ws1["A1"].fill = navy_fill
     ws1["A1"].alignment = Alignment(horizontal="center", vertical="center")
 
     summary_rows = [
-        ("Project:", "CreditLens — Indian Banking & Credit Portfolio Analytics"),
-        ("Primary Source:", "Reserve Bank of India (RBI) — DBIE Table 16"),
+        ("Project:", "CreditLens â€” Indian Banking & Credit Portfolio Analytics"),
+        ("Primary Source:", "Reserve Bank of India (RBI) â€” DBIE Table 16"),
         ("Historical Coverage:", "January 2019 to June 2026 (90 consecutive reporting months)"),
-        ("Reporting Unit:", "Rupees crore (₹ Cr)"),
+        ("Reporting Unit:", "Rupees crore (â‚¹ Cr)"),
         ("Audit Grain:", "Sector-by-Month granularity"),
-        ("Cross-Tool Scope:", "Python Pipeline vs SQLite/PostgreSQL Views vs Excel Dynamic Formulas"),
+        ("Cross-Tool Scope:", "Independent pandas and SQLite calculations with Excel formula checks"),
         ("Reconciliation Precision:", "0.01 Cr / 0.01% tolerance threshold"),
-        ("Audit Result:", "100% RECONCILED — Zero Discrepancies across all representative periods")
+        ("Audit Result:", "Formula checks recalculate when opened in Excel; inspect comparison status")
     ]
 
     for idx, (lbl, val) in enumerate(summary_rows, start=4):
@@ -79,14 +89,14 @@ def generate_excel_reconciliation(data_dir: str = "data", output_path: str = "ex
         cell.alignment = Alignment(horizontal="center", vertical="center")
 
     kpi_matrix_data = [
-        ("KPI-01", "Total Industry Credit", "Grand Total observed credit exposure", "df[sector_code=='2']['credit_outstanding_cr']", "SELECT total_credit_cr FROM v_total_industry_monthly", "=C_GrandTotal", "RECONCILED"),
-        ("KPI-02", "MoM Credit Change (₹ Cr)", "C_t - C_t-1", "curr_credit - prev_month_credit", "curr.credit_outstanding_cr - prev_m.credit_outstanding_cr", "=C_t - C_prev_month", "RECONCILED"),
-        ("KPI-03", "MoM Credit Growth %", "((C_t - C_t-1) / C_t-1) * 100", "(mom_change / prev_month_credit) * 100", "ROUND(100.0 * mom_change / prev_month_credit, 2)", "=(C_t - C_prev_m)/C_prev_m * 100", "RECONCILED"),
-        ("KPI-04", "YoY Credit Change (₹ Cr)", "C_t - C_t-12", "curr_credit - prev_year_credit", "curr.credit_outstanding_cr - prev_y.credit_outstanding_cr", "=C_t - C_prev_year", "RECONCILED"),
-        ("KPI-05", "YoY Credit Growth %", "((C_t - C_t-12) / C_t-12) * 100", "(yoy_change / prev_year_credit) * 100", "ROUND(100.0 * yoy_change / prev_year_credit, 2)", "=(C_t - C_prev_y)/C_prev_y * 100", "RECONCILED"),
-        ("KPI-06", "Sector Portfolio Share %", "(C_sector / C_total) * 100", "(credit_outstanding_cr / total_credit_cr) * 100", "ROUND(100.0 * curr / gt.total_credit_cr, 4)", "=C_sector / C_total * 100", "RECONCILED"),
-        ("KPI-07", "Top 3 Concentration Share %", "Sum of top 3 mutually exclusive sector shares", "top3['sector_share_pct'].sum()", "SUM(CASE WHEN rnk <= 3 THEN sector_share_pct END)", "=SUM(Top3_Shares)", "RECONCILED"),
-        ("KPI-08", "Herfindahl-Hirschman Index (HHI)", "Sum of squared fractional shares * 10,000", "sum((share_pct)^2)", "ROUND(SUM(POWER(sector_share_pct, 2)), 2)", "=SUMSQ(Shares_pct)", "RECONCILED")
+        ("KPI-01", "Total Industry Credit", "Grand Total observed credit exposure", "df[sector_code=='2']['credit_outstanding_cr']", "SELECT total_credit_cr FROM v_total_industry_monthly", "=C_GrandTotal", "SPECIFIED"),
+        ("KPI-02", "MoM Credit Change (â‚¹ Cr)", "C_t - C_t-1", "curr_credit - prev_month_credit", "curr.credit_outstanding_cr - prev_m.credit_outstanding_cr", "=C_t - C_prev_month", "SPECIFIED"),
+        ("KPI-03", "MoM Credit Growth %", "((C_t - C_t-1) / C_t-1) * 100", "(mom_change / prev_month_credit) * 100", "ROUND(100.0 * mom_change / prev_month_credit, 2)", "=(C_t - C_prev_m)/C_prev_m * 100", "SPECIFIED"),
+        ("KPI-04", "YoY Credit Change (â‚¹ Cr)", "C_t - C_t-12", "curr_credit - prev_year_credit", "curr.credit_outstanding_cr - prev_y.credit_outstanding_cr", "=C_t - C_prev_year", "SPECIFIED"),
+        ("KPI-05", "YoY Credit Growth %", "((C_t - C_t-12) / C_t-12) * 100", "(yoy_change / prev_year_credit) * 100", "ROUND(100.0 * yoy_change / prev_year_credit, 2)", "=(C_t - C_prev_y)/C_prev_y * 100", "SPECIFIED"),
+        ("KPI-06", "Sector Portfolio Share %", "(C_sector / C_total) * 100", "(credit_outstanding_cr / total_credit_cr) * 100", "ROUND(100.0 * curr / gt.total_credit_cr, 4)", "=C_sector / C_total * 100", "SPECIFIED"),
+        ("KPI-07", "Top 3 Concentration Share %", "Sum of top 3 mutually exclusive sector shares", "top3['sector_share_pct'].sum()", "SUM(CASE WHEN rnk <= 3 THEN sector_share_pct END)", "=SUM(Top3_Shares)", "SPECIFIED"),
+        ("KPI-08", "Herfindahl-Hirschman Index (HHI)", "Sum of squared fractional shares * 10,000", "sum((share_pct)^2)", "ROUND(SUM(POWER(sector_share_pct, 2)), 2)", "=SUMSQ(Shares_pct)", "SPECIFIED")
     ]
 
     for row_idx, row_data in enumerate(kpi_matrix_data, start=15):
@@ -113,10 +123,10 @@ def generate_excel_reconciliation(data_dir: str = "data", output_path: str = "ex
     ws2["A1"].alignment = Alignment(horizontal="center", vertical="center")
 
     recon_headers = [
-        "Reporting Month", "Sector Code", "Sector Name", "Credit Outstanding (₹ Cr)",
+        "Reporting Month", "Sector Code", "Sector Name", "Credit Outstanding (â‚¹ Cr)",
         "Python YoY %", "SQL YoY %", "Excel YoY Formula",
         "Python Share %", "SQL Share %", "Excel Share Formula",
-        "Reconciliation Audit"
+        "Reconciliation Audit", "Prior Year Credit", "Grand Total Credit"
     ]
 
     for col_idx, h in enumerate(recon_headers, start=1):
@@ -148,6 +158,11 @@ def generate_excel_reconciliation(data_dir: str = "data", output_path: str = "ex
     df_sample = pd.read_sql_query(query, conn)
     conn.close()
 
+    # Independent pandas calculations from cleaned source observations.
+    df_python = pd.read_csv(os.path.join(data_dir, "processed", "credit_clean.csv"), dtype={"sector_code": str})
+    df_python["period"] = pd.PeriodIndex(df_python["reporting_month"], freq="M")
+    source_values = df_python.set_index(["sector_code", "period"])["credit_outstanding_cr"].to_dict()
+
     for idx, row in df_sample.iterrows():
         excel_row = idx + 4
         ws2.cell(row=excel_row, column=1, value=row["reporting_month"]).font = regular_font
@@ -158,8 +173,18 @@ def generate_excel_reconciliation(data_dir: str = "data", output_path: str = "ex
         c_cell.font = regular_font
         c_cell.number_format = "#,##0.00"
 
-        # Python YoY
-        py_yoy = ws2.cell(row=excel_row, column=5, value=float(row["yoy_growth_pct"]) if pd.notna(row["yoy_growth_pct"]) else 0.0)
+        month_period = pd.Period(row["reporting_month"], freq="M")
+        code = str(row["sector_code"])
+        previous = source_values.get((code, month_period - 12))
+        grand_total = source_values.get(("2", month_period))
+        current = float(row["credit_outstanding_cr"])
+        python_yoy = ((current - previous) / previous * 100.0) if previous else None
+        python_share = (current / grand_total * 100.0) if grand_total else None
+        ws2.cell(row=excel_row, column=12, value=previous)
+        ws2.cell(row=excel_row, column=13, value=grand_total)
+
+        # Python YoY independently derived from cleaned source records.
+        py_yoy = ws2.cell(row=excel_row, column=5, value=python_yoy)
         py_yoy.font = regular_font
         py_yoy.number_format = "0.00"
 
@@ -168,20 +193,12 @@ def generate_excel_reconciliation(data_dir: str = "data", output_path: str = "ex
         sql_yoy.font = regular_font
         sql_yoy.number_format = "0.00"
 
-        # Excel formula for YoY: reference row
-        # In this sheet, we record the verified value computed by Excel formula
-        prev_yr_val = float(row["previous_year_credit_cr"]) if pd.notna(row["previous_year_credit_cr"]) else None
-        if prev_yr_val and prev_yr_val > 0:
-            xl_formula_val = round(((float(row["credit_outstanding_cr"]) - prev_yr_val) / prev_yr_val) * 100.0, 2)
-        else:
-            xl_formula_val = 0.0
-
-        xl_yoy_cell = ws2.cell(row=excel_row, column=7, value=xl_formula_val)
+        xl_yoy_cell = ws2.cell(row=excel_row, column=7, value=f'=IFERROR((D{excel_row}-L{excel_row})/L{excel_row}*100,"")')
         xl_yoy_cell.font = regular_font
         xl_yoy_cell.number_format = "0.00"
 
         # Python Share %
-        py_sh = ws2.cell(row=excel_row, column=8, value=round(float(row["sector_share_pct"]), 4))
+        py_sh = ws2.cell(row=excel_row, column=8, value=python_share)
         py_sh.font = regular_font
         py_sh.number_format = "0.0000"
 
@@ -191,19 +208,17 @@ def generate_excel_reconciliation(data_dir: str = "data", output_path: str = "ex
         sql_sh.number_format = "0.0000"
 
         # Excel Share
-        tot_val = float(row["grand_total_industry_credit_cr"])
-        xl_share_val = round((float(row["credit_outstanding_cr"]) / tot_val) * 100.0, 4)
-        xl_sh_cell = ws2.cell(row=excel_row, column=10, value=xl_share_val)
+        xl_sh_cell = ws2.cell(row=excel_row, column=10, value=f'=IFERROR(D{excel_row}/M{excel_row}*100,"")')
         xl_sh_cell.font = regular_font
         xl_sh_cell.number_format = "0.0000"
 
         # Audit status
-        audit_cell = ws2.cell(row=excel_row, column=11, value="MATCH")
+        audit_cell = ws2.cell(row=excel_row, column=11, value=f'=IF(AND(ABS(E{excel_row}-F{excel_row})<0.01,ABS(E{excel_row}-G{excel_row})<0.01,ABS(H{excel_row}-I{excel_row})<0.01,ABS(H{excel_row}-J{excel_row})<0.01),"MATCH","MISMATCH")')
         audit_cell.font = pass_font
         audit_cell.fill = pass_fill
         audit_cell.alignment = Alignment(horizontal="center")
 
-        for c in range(1, 12):
+        for c in range(1, 14):
             ws2.cell(row=excel_row, column=c).border = thin_border
 
     # -------------------------------------------------------------
@@ -218,7 +233,7 @@ def generate_excel_reconciliation(data_dir: str = "data", output_path: str = "ex
     ws3["A1"].fill = navy_fill
     ws3["A1"].alignment = Alignment(horizontal="center", vertical="center")
 
-    hhi_headers = ["Reporting Month", "Total Mutually Exclusive Credit (₹ Cr)", "HHI (Points 0-10,000)", "HHI (Fraction 0-1)", "Top 3 Share %", "Largest Sector", "Largest Sector Share %"]
+    hhi_headers = ["Reporting Month", "Total Mutually Exclusive Credit (â‚¹ Cr)", "HHI (Points 0-10,000)", "HHI (Fraction 0-1)", "Top 3 Share %", "Largest Sector", "Largest Sector Share %"]
     for col_idx, h in enumerate(hhi_headers, start=1):
         cell = ws3.cell(row=3, column=col_idx, value=h)
         cell.font = header_font
@@ -272,3 +287,5 @@ def generate_excel_reconciliation(data_dir: str = "data", output_path: str = "ex
 if __name__ == "__main__":
     path = generate_excel_reconciliation()
     print("Reconciliation workbook generated successfully at:", path)
+
+

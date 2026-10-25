@@ -2,7 +2,7 @@
 Database Loader Module for CreditLens.
 Loads cleaned datasets into relational dimension and fact tables,
 creates analytical KPI views, and executes database integrity checks.
-Supports SQLite (default local) and PostgreSQL.
+Uses SQLite. PostgreSQL is not implemented or tested in this repository.
 """
 
 import os
@@ -33,10 +33,13 @@ def populate_dimensions_and_facts(conn: sqlite3.Connection, data_dir: str = "dat
     """
     proc_dir = os.path.join(data_dir, "processed")
     clean_csv = os.path.join(proc_dir, "credit_clean.csv")
+    major_csv = os.path.join(proc_dir, "major_sectors_clean.csv")
     exc_csv = os.path.join(proc_dir, "data_quality_exceptions.csv")
 
     df_clean = pd.read_csv(clean_csv)
+    df_major = pd.read_csv(major_csv, dtype={"sector_code": str, "parent_code": str})
     df_clean["reporting_date"] = pd.to_datetime(df_clean["reporting_date"])
+    df_major["reporting_date"] = pd.to_datetime(df_major["reporting_date"])
 
     # 1. Populate dim_sector
     df_sectors = df_clean[[
@@ -66,12 +69,24 @@ def populate_dimensions_and_facts(conn: sqlite3.Connection, data_dir: str = "dat
         "reporting_quarter", "month_num", "month_name"
     ]].to_sql("dim_date", conn, if_exists="append", index=False)
 
+    # 2b. Table 15 has its own taxonomy because its categories overlap Table 16.
+    df_major_sectors = df_major[["sector_code", "sector_name", "parent_code", "parent_sector_name", "hierarchy_level", "is_parent_total"]].drop_duplicates(subset=["sector_code"]).reset_index(drop=True)
+    df_major_sectors["major_sector_id"] = df_major_sectors.index + 1
+    df_major_sectors[["major_sector_id", "sector_code", "sector_name", "parent_code", "parent_sector_name", "hierarchy_level", "is_parent_total"]].to_sql("dim_major_sector", conn, if_exists="append", index=False)
+
     # 3. Populate dim_source
     sources = [{
         "source_id": 1,
         "source_name": "Reserve Bank of India (RBI)",
         "publication_table": "Industry-wise deployment of bank credit (Table 16)",
         "source_url": "https://dbie.rbihub.in/banking/bank-credit-by-industry",
+        "unit": "Rupees crores",
+        "ingestion_version": "1.0.0"
+    }, {
+        "source_id": 2,
+        "source_name": "Reserve Bank of India (RBI)",
+        "publication_table": "Deployment of gross bank credit by major sectors (Table 15)",
+        "source_url": "https://dbie.rbihub.in/banking/bank-credit-by-sector",
         "unit": "Rupees crores",
         "ingestion_version": "1.0.0"
     }]
@@ -92,6 +107,15 @@ def populate_dimensions_and_facts(conn: sqlite3.Connection, data_dir: str = "dat
         "credit_outstanding_cr", "quality_status"
     ]].to_sql("fact_credit_outstanding", conn, if_exists="append", index=False)
 
+    # Separate Table 15 fact; never add it to the Table 16 industry fact.
+    major_sector_map = df_major_sectors.set_index("sector_code")["major_sector_id"].to_dict()
+    df_major_fact = df_major.copy()
+    df_major_fact["calendar_date"] = df_major_fact["reporting_date"].dt.strftime("%Y-%m-%d")
+    df_major_fact["date_id"] = df_major_fact["calendar_date"].map(date_map)
+    df_major_fact["major_sector_id"] = df_major_fact["sector_code"].map(major_sector_map)
+    df_major_fact["source_id"] = 2
+    df_major_fact[["observation_id", "date_id", "major_sector_id", "source_id", "credit_outstanding_cr", "quality_status"]].to_sql("fact_major_sector_credit", conn, if_exists="append", index=False)
+
     # 5. Populate data_quality_exceptions
     if os.path.exists(exc_csv):
         df_exc = pd.read_csv(exc_csv)
@@ -106,6 +130,7 @@ def populate_dimensions_and_facts(conn: sqlite3.Connection, data_dir: str = "dat
         "sectors_loaded": len(df_sectors),
         "dates_loaded": len(df_dates),
         "facts_loaded": len(df_fact),
+        "major_sector_facts_loaded": len(df_major_fact),
         "exceptions_loaded": len(df_exc) if os.path.exists(exc_csv) and not df_exc.empty else 0
     }
 

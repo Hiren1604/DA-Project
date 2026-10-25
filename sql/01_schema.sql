@@ -1,6 +1,6 @@
 -- ====================================================================
 -- CreditLens Relational Schema Definition
--- Compatible with PostgreSQL and SQLite
+-- SQLite schema used by the local CreditLens implementation
 -- ====================================================================
 
 -- Drop existing views and tables if recreating
@@ -12,6 +12,8 @@ DROP VIEW IF EXISTS v_sector_monthly_kpis;
 
 DROP TABLE IF EXISTS data_quality_exceptions;
 DROP TABLE IF EXISTS fact_credit_outstanding;
+DROP TABLE IF EXISTS fact_major_sector_credit;
+DROP TABLE IF EXISTS dim_major_sector;
 DROP TABLE IF EXISTS dim_source;
 DROP TABLE IF EXISTS dim_date;
 DROP TABLE IF EXISTS dim_sector;
@@ -74,9 +76,34 @@ CREATE TABLE fact_credit_outstanding (
     FOREIGN KEY (source_id) REFERENCES dim_source(source_id)
 );
 
+-- Table 15 is a separate overlapping classification, so it has its own dimensions/fact.
+CREATE TABLE dim_major_sector (
+    major_sector_id INTEGER PRIMARY KEY,
+    sector_code VARCHAR(32) NOT NULL UNIQUE,
+    sector_name VARCHAR(255) NOT NULL,
+    parent_code VARCHAR(32),
+    parent_sector_name VARCHAR(255),
+    hierarchy_level VARCHAR(32) NOT NULL,
+    is_parent_total BOOLEAN NOT NULL
+);
+
+CREATE TABLE fact_major_sector_credit (
+    observation_id INTEGER PRIMARY KEY,
+    date_id INTEGER NOT NULL,
+    major_sector_id INTEGER NOT NULL,
+    source_id INTEGER NOT NULL,
+    credit_outstanding_cr NUMERIC(15, 2),
+    quality_status VARCHAR(20) NOT NULL DEFAULT 'valid',
+    FOREIGN KEY (date_id) REFERENCES dim_date(date_id),
+    FOREIGN KEY (major_sector_id) REFERENCES dim_major_sector(major_sector_id),
+    FOREIGN KEY (source_id) REFERENCES dim_source(source_id)
+);
+
 -- Indices for analytical querying performance
 CREATE INDEX idx_fact_date ON fact_credit_outstanding(date_id);
 CREATE INDEX idx_fact_sector ON fact_credit_outstanding(sector_id);
+CREATE INDEX idx_fact_major_date ON fact_major_sector_credit(date_id);
+CREATE INDEX idx_fact_major_sector ON fact_major_sector_credit(major_sector_id);
 CREATE INDEX idx_fact_quality ON fact_credit_outstanding(quality_status);
 CREATE INDEX idx_sector_hierarchy ON dim_sector(hierarchy_level, is_mutually_exclusive);
 CREATE INDEX idx_date_month ON dim_date(reporting_month);

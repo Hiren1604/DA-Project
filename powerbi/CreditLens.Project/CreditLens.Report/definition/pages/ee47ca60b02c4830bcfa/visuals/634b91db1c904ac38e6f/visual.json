@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "634b91db1c904ac38e6f",
+  "position": {
+    "x": 335,
+    "y": 20,
+    "z": 1000,
+    "width": 290,
+    "height": 100,
+    "tabOrder": 1
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "YoY Credit Growth"
+                }
+              },
+              "queryRef": "Credit.YoY Credit Growth",
+              "nativeQueryRef": "YoY Credit Growth"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Year-on-year growth'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

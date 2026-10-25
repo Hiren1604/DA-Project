@@ -41,7 +41,7 @@
 
     <div class="flex items-center space-x-3">
       <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> DBIE Connected
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Local data available
       </span>
       <a href="/docs" target="_blank" class="text-xs text-slate-400 hover:text-cyan-400 underline">Swagger API</a>
     </div>
@@ -169,7 +169,7 @@
     <!-- TAB 4: DATA QUALITY & QA -->
     <div id="view-quality" class="tab-content hidden space-y-6">
       <div class="card p-4">
-        <h3 class="text-sm font-bold text-slate-200 mb-3">Automated Data Validation Matrix (11 Rules)</h3>
+        <h3 class="text-sm font-bold text-slate-200 mb-3">Automated Data Validation Matrix (13 Checks)</h3>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs text-slate-300">
             <thead class="bg-slate-900/80 text-slate-400 uppercase text-[10px] tracking-wider">
@@ -209,12 +209,21 @@
   </main>
 
   <footer class="bg-[#101C30] border-t border-[#1E293B] px-6 py-3 text-center text-xs text-slate-500">
-    CreditLens • Indian Banking & Credit Portfolio Analytics • Built with Python, SQL, SQLite/PostgreSQL, Power BI & FastAPI
+    CreditLens • Indian Banking & Credit Portfolio Analytics • Built with Python, SQLite, Power BI design materials & FastAPI
   </footer>
 
   <!-- Dashboard JavaScript Logic -->
   <script>
     let charts = {};
+
+    async function fetchJson(url) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        const detail = await response.json().catch(() => ({}));
+        throw new Error(detail.detail || `Request failed (${response.status})`);
+      }
+      return response.json();
+    }
 
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -234,8 +243,7 @@
     async function initDashboard() {
       try {
         // Load summary
-        const sumRes = await fetch('/api/summary');
-        const sum = await sumRes.json();
+        const sum = await fetchJson('/api/summary');
         
         document.getElementById('kpi-total-credit').innerText = '₹' + Math.round(sum.total_credit_cr).toLocaleString() + ' Cr';
         document.getElementById('kpi-yoy-growth').innerText = (sum.yoy_growth_pct > 0 ? '+' : '') + sum.yoy_growth_pct + '% YoY expansion';
@@ -245,18 +253,15 @@
         document.getElementById('kpi-hhi').innerText = sum.hhi_index + ' pts';
 
         // Load Total Trend
-        const trendRes = await fetch('/api/credit/trends?sector_code=2');
-        const trendData = await trendRes.json();
+        const trendData = await fetchJson('/api/credit/trends?sector_code=2');
         renderTotalTrendChart(trendData.series);
 
         // Load Top Sectors
-        const compRes = await fetch('/api/credit/comparison');
-        const compData = await compRes.json();
+        const compData = await fetchJson('/api/credit/comparison');
         renderTopSectorsChart(compData.comparison.slice(0, 8));
 
         // Populate Sector Select dropdown
-        const secRes = await fetch('/api/sectors');
-        const secData = await secRes.json();
+        const secData = await fetchJson('/api/sectors');
         const sel = document.getElementById('sectorSelect');
         secData.sectors.forEach(s => {
           if (s.sector_code !== '2') {
@@ -340,8 +345,8 @@
         const latest = series[series.length - 1];
 
         document.getElementById('sec-out').innerText = '₹' + Math.round(latest.credit_outstanding_cr).toLocaleString() + ' Cr';
-        document.getElementById('sec-share').innerText = latest.sector_share_pct ? latest.sector_share_pct.toFixed(2) + '%' : '100.0%';
-        document.getElementById('sec-yoy').innerText = (latest.yoy_growth_pct > 0 ? '+' : '') + latest.yoy_growth_pct + '%';
+        document.getElementById('sec-share').innerText = Number.isFinite(latest.sector_share_pct) ? latest.sector_share_pct.toFixed(2) + '%' : '100.0%';
+        document.getElementById('sec-yoy').innerText = Number.isFinite(latest.yoy_growth_pct) ? `${latest.yoy_growth_pct > 0 ? '+' : ''}${latest.yoy_growth_pct}%` : 'Not available';
 
         const ctx = document.getElementById('chart-sector-history').getContext('2d');
         if (charts.sectorHistory) charts.sectorHistory.destroy();
@@ -377,24 +382,20 @@
 
     async function loadConcentrationCharts() {
       try {
-        const res = await fetch('/api/credit/trends?sector_code=2');
-        // Let's get monthly HHI from database or summary endpoint
-        // For simplicity, query the concentration series
+        const payload = await fetchJson('/api/credit/concentration');
+        const series = payload.series || [];
+        if (series.length === 0) throw new Error('No concentration observations are available.');
+        const months = series.map(d => d.reporting_month);
         const ctxHhi = document.getElementById('chart-hhi-trend').getContext('2d');
         const ctxTop3 = document.getElementById('chart-top3-trend').getContext('2d');
-
-        // We can fetch from API or generate series
-        const dummyMonths = ["2019-01", "2020-01", "2021-01", "2022-01", "2023-01", "2023-07", "2024-01", "2025-01", "2026-06"];
-        const dummyHhi = [1713.9, 1680.2, 1645.1, 1590.4, 1540.2, 1490.5, 1460.1, 1445.8, 1431.3];
-        const dummyTop3 = [56.8, 55.4, 54.2, 53.8, 52.9, 52.1, 51.5, 51.0, 50.7];
 
         charts.hhi = new Chart(ctxHhi, {
           type: 'line',
           data: {
-            labels: dummyMonths,
+            labels: months,
             datasets: [{
               label: 'HHI (Points)',
-              data: dummyHhi,
+              data: series.map(d => d.hhi_index),
               borderColor: '#06B6D4',
               borderWidth: 2.5
             }]
@@ -412,10 +413,10 @@
         charts.top3 = new Chart(ctxTop3, {
           type: 'line',
           data: {
-            labels: dummyMonths,
+            labels: months,
             datasets: [{
               label: 'Top 3 Share %',
-              data: dummyTop3,
+              data: series.map(d => d.top3_concentration_share_pct),
               borderColor: '#F59E0B',
               backgroundColor: 'rgba(245, 158, 11, 0.1)',
               fill: true,
@@ -434,21 +435,27 @@
 
       } catch (err) {
         console.error("Concentration chart error:", err);
+        document.getElementById('chart-hhi-trend').parentElement.innerText = 'Unable to load calculated concentration history.';
+        document.getElementById('chart-top3-trend').parentElement.innerText = 'Unable to load calculated concentration history.';
       }
     }
 
     async function loadQualityTable() {
       try {
-        const res = await fetch('/api/data-quality');
-        const data = await res.json();
+        const data = await fetchJson('/api/data-quality');
         const tbody = document.getElementById('qualityTableBody');
         tbody.innerHTML = '';
 
+        if (!data.validation_checks || data.validation_checks.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500">No validation report is available.</td></tr>';
+          return;
+        }
+
         data.validation_checks.forEach(c => {
           const tr = document.createElement('tr');
-          const statusBadge = c.status === 'PASS' 
+          const statusBadge = c.status === 'PASS'
             ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">PASS</span>'
-            : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">ISOLATED (' + c.exceptions_count + ')</span>';
+            : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">' + c.status + ' (' + c.exceptions_count + ')</span>';
 
           tr.innerHTML = `
             <td class="p-2.5 font-medium text-slate-300">${c.dataset}</td>
@@ -462,6 +469,7 @@
         });
       } catch (err) {
         console.error("Quality table error:", err);
+        document.getElementById('qualityTableBody').innerHTML = '<tr><td colspan="6" class="p-4 text-center text-rose-400">Could not load validation results. ' + err.message + '</td></tr>';
       }
     }
 

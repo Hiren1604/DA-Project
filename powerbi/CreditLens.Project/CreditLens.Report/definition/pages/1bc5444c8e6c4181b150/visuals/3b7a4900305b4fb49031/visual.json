@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "3b7a4900305b4fb49031",
+  "position": {
+    "x": 850,
+    "y": 520,
+    "z": 1000,
+    "width": 405,
+    "height": 145,
+    "tabOrder": 3
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "Total Industry Credit Cr"
+                }
+              },
+              "queryRef": "Credit.Total Industry Credit Cr",
+              "nativeQueryRef": "Total Industry Credit Cr"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Source scope: RBI industry credit; aggregate exposure, not borrower default risk'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

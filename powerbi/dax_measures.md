@@ -1,175 +1,98 @@
-# CreditLens — Power BI DAX Measures & Semantic Model
+﻿# CreditLens Power BI DAX Measures
 
-This document specifies the complete DAX calculation layer for the CreditLens 3-page Power BI dashboard.
-All measures assume a star schema with `FactCredit`, `DimDate`, `DimSector`, and an isolated mutually exclusive fact filter to avoid parent-child double-counting.
+These measures are design material for a future Power BI model. The repository does not include a verified PBIX. The fact table contains every hierarchy level, so measures must select either the grand-total row or the 19 mutually exclusive Level-1 industries explicitly.
 
----
+## Base measures
 
-## 1. Core Base Measures
-
-### 1.1 Total Credit Outstanding
-Returns the sum of bank credit outstanding in ₹ crore for the active filter context.
 ```dax
-Total Credit (₹ Cr) = 
+Credit Amount Raw (Cr) =
 SUM(FactCredit[CreditOutstandingCr])
-```
 
-### 1.2 Formatted Credit Outstanding (₹ Lakh Crore)
-Formats large aggregate values into readable Indian lakh crore notation.
-```dax
-Total Credit (₹ Lakh Cr) = 
-DIVIDE([Total Credit (₹ Cr)], 100000, 0)
-```
-
----
-
-## 2. Time-Intelligence & Growth Measures
-
-### 2.1 Credit Previous Month (MoM Base)
-Uses continuous calendar dates to ensure month-over-month comparisons are strictly aligned.
-```dax
-Credit Previous Month = 
+Total Industry Credit (Cr) =
 CALCULATE(
-    [Total Credit (₹ Cr)],
+    [Credit Amount Raw (Cr)],
+    REMOVEFILTERS(DimSector),
+    DimSector[SectorCode] = "2"
+)
+
+Level 1 Sector Credit (Cr) =
+CALCULATE(
+    [Credit Amount Raw (Cr)],
+    DimSector[IsMutuallyExclusive] = TRUE()
+)
+
+Total Level 1 Credit (Cr) =
+CALCULATE(
+    [Credit Amount Raw (Cr)],
+    REMOVEFILTERS(DimSector),
+    DimSector[IsMutuallyExclusive] = TRUE()
+)
+
+Sector Share % =
+DIVIDE([Level 1 Sector Credit (Cr)], [Total Level 1 Credit (Cr)])
+
+Total Industry Credit (Lakh Cr) =
+DIVIDE([Total Industry Credit (Cr)], 100000)
+```
+
+## Growth measures
+
+Use a complete, continuous date dimension marked as the model date table. The reporting observations occur once per month; the date dimension supplies calendar alignment.
+
+```dax
+Credit Previous Month (Cr) =
+CALCULATE(
+    [Total Industry Credit (Cr)],
     DATEADD(DimDate[CalendarDate], -1, MONTH)
 )
-```
 
-### 2.2 MoM Credit Change (₹ Cr)
-Absolute movement in credit outstanding compared to prior month.
-```dax
-MoM Credit Change (₹ Cr) = 
-VAR PrevMonth = [Credit Previous Month]
-RETURN
-    IF(
-        NOT ISBLANK(PrevMonth),
-        [Total Credit (₹ Cr)] - PrevMonth,
-        BLANK()
-    )
-```
+MoM Change (Cr) =
+[Total Industry Credit (Cr)] - [Credit Previous Month (Cr)]
 
-### 2.3 MoM Credit Growth %
-Relative percentage change month-over-month.
-```dax
-MoM Credit Growth % = 
-DIVIDE(
-    [MoM Credit Change (₹ Cr)],
-    [Credit Previous Month]
-)
-```
+MoM Growth % =
+DIVIDE([MoM Change (Cr)], [Credit Previous Month (Cr)])
 
-### 2.4 Credit Previous Year (YoY Base)
-Strictly shifts the active calendar date window back by exactly one calendar year.
-```dax
-Credit Previous Year = 
+Credit Previous Year (Cr) =
 CALCULATE(
-    [Total Credit (₹ Cr)],
+    [Total Industry Credit (Cr)],
     DATEADD(DimDate[CalendarDate], -1, YEAR)
 )
+
+YoY Change (Cr) =
+[Total Industry Credit (Cr)] - [Credit Previous Year (Cr)]
+
+YoY Growth % =
+DIVIDE([YoY Change (Cr)], [Credit Previous Year (Cr)])
 ```
 
-### 2.5 YoY Credit Change (₹ Cr)
-Absolute expansion in credit over 12 months.
+## Concentration measures
+
 ```dax
-YoY Credit Change (₹ Cr) = 
-VAR PrevYear = [Credit Previous Year]
+Top 3 Concentration Share % =
+VAR SectorTable =
+    FILTER(ALL(DimSector), DimSector[IsMutuallyExclusive] = TRUE())
+VAR RankedSectors =
+    TOPN(3, SectorTable, CALCULATE([Level 1 Sector Credit (Cr)]), DESC)
+VAR Top3Credit =
+    SUMX(RankedSectors, CALCULATE([Level 1 Sector Credit (Cr)]))
 RETURN
-    IF(
-        NOT ISBLANK(PrevYear),
-        [Total Credit (₹ Cr)] - PrevYear,
-        BLANK()
-    )
-```
+    DIVIDE(Top3Credit, [Total Level 1 Credit (Cr)])
 
-### 2.6 YoY Credit Growth %
-Standard annual lending expansion rate.
-```dax
-YoY Credit Growth % = 
-DIVIDE(
-    [YoY Credit Change (₹ Cr)],
-    [Credit Previous Year]
-)
-```
-
----
-
-## 3. Portfolio Allocation & Concentration Measures
-
-### 3.1 Total Mutually Exclusive Industry Credit
-Calculates total industrial credit across the 19 mutually exclusive sectors, removing individual sector filters while strictly preserving date filters.
-```dax
-Total Mutually Exclusive Industry Credit = 
-CALCULATE(
-    [Total Credit (₹ Cr)],
-    DimSector[IsMutuallyExclusive] = TRUE,
-    REMOVEFILTERS(DimSector[SectorName], DimSector[SectorCode])
-)
-```
-
-### 3.2 Sector Portfolio Share %
-Sector's proportion of the total industrial credit portfolio.
-```dax
-Sector Share % = 
-DIVIDE(
-    [Total Credit (₹ Cr)],
-    [Total Mutually Exclusive Industry Credit]
-)
-```
-
-### 3.3 Top 3 Sectors Concentration Share %
-Measures exposure concentration in the top three largest sectors in the selected period.
-```dax
-Top 3 Concentration Share % = 
-VAR Top3Sectors = 
-    TOPN(
-        3, 
-        CALCULATETABLE(
-            DimSector, 
-            DimSector[IsMutuallyExclusive] = TRUE
-        ), 
-        [Total Credit (₹ Cr)], 
-        DESC
-    )
-VAR Top3Credit = 
-    CALCULATE(
-        [Total Credit (₹ Cr)], 
-        KEEPFILTERS(Top3Sectors)
-    )
+HHI Index =
+VAR SectorTable =
+    FILTER(ALL(DimSector), DimSector[IsMutuallyExclusive] = TRUE())
 RETURN
-    DIVIDE(Top3Credit, [Total Mutually Exclusive Industry Credit])
-```
-
-### 3.4 Herfindahl-Hirschman Index (HHI - Points)
-Calculates market concentration as the sum of squared sector shares (scale 0 to 10,000 points).
-- Below 1,000: Unconcentrated
-- 1,000 to 1,500: Moderate Concentration
-- Above 1,800: Highly Concentrated
-```dax
-HHI Index = 
-VAR SectorShares = 
-    ADDCOLUMNS(
-        CALCULATETABLE(
-            DimSector, 
-            DimSector[IsMutuallyExclusive] = TRUE
-        ),
-        "SharePct", [Sector Share %] * 100
+    SUMX(
+        SectorTable,
+        VAR SharePct = CALCULATE([Sector Share %]) * 100
+        RETURN SharePct * SharePct
     )
-RETURN
-    SUMX(SectorShares, [SharePct] ^ 2)
 ```
 
----
+## Visual guardrails
 
-## 4. Hierarchy & Integrity Guards
-
-### 4.1 Is Non-Additive Row Warning
-Flag to warn if a visual is mixing parent sector totals with sub-sectors.
-```dax
-Double Count Risk Flag = 
-IF(
-    CALCULATE(COUNTROWS(FactCredit), DimSector[HierarchyLevel] = "grand_total") > 0 &&
-    CALCULATE(COUNTROWS(FactCredit), DimSector[HierarchyLevel] = "sub_sector") > 0,
-    "WARNING: Mixed Hierarchy Detected",
-    "NORMAL"
-)
-```
+- Use `Total Industry Credit (Cr)` for the grand-total headline and overall trend.
+- Use `Level 1 Sector Credit (Cr)` and `Sector Share %` for sector comparisons.
+- Use `Total Level 1 Credit (Cr)` as the denominator for industry portfolio distribution.
+- Do not sum all rows in `FactCredit`: grand totals and nested sub-sectors overlap.
+- Validate every report measure against the pandas outputs and SQLite views before publishing.

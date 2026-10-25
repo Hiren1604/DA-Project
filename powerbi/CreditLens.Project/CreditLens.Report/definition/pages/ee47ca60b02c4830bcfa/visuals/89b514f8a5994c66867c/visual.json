@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "89b514f8a5994c66867c",
+  "position": {
+    "x": 25,
+    "y": 20,
+    "z": 1000,
+    "width": 290,
+    "height": 100,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "Total Industry Credit Cr"
+                }
+              },
+              "queryRef": "Credit.Total Industry Credit Cr",
+              "nativeQueryRef": "Total Industry Credit Cr"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Total Industry Credit (₹ crore)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

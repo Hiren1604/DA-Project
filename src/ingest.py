@@ -7,6 +7,7 @@ records cryptographic hashes, and creates standardized long-format raw datasets.
 import os
 import json
 import hashlib
+import shutil
 from datetime import datetime, timezone
 import pandas as pd
 
@@ -52,8 +53,8 @@ def unpivot_rbi_json(data: dict, dataset_type: str = "industry") -> pd.DataFrame
 
 def run_ingestion(
     data_dir: str = "data",
-    scratch_table16: str = r"C:\Users\Hiren\.gemini\antigravity-cli\brain\6f4d34ce-13b8-44c1-a55f-232f0e4fc9c2\scratch\rbi_dbie_data.json",
-    scratch_table15: str = r"C:\Users\Hiren\.gemini\antigravity-cli\brain\6f4d34ce-13b8-44c1-a55f-232f0e4fc9c2\scratch\rbi_sector_data.json"
+    scratch_table16: str | None = None,
+    scratch_table15: str | None = None
 ) -> dict:
     """
     Run full ingestion pipeline: copy/archive raw JSON, compute hashes, save source metadata,
@@ -66,8 +67,9 @@ def run_ingestion(
     dest_t15 = os.path.join(raw_dir, "rbi_sector_credit_raw.json")
 
     # Load Table 16
-    if os.path.exists(scratch_table16):
-        with open(scratch_table16, "r", encoding="utf-8") as f:
+    if scratch_table16 and os.path.exists(scratch_table16):
+        shutil.copyfile(scratch_table16, dest_t16)
+        with open(dest_t16, "r", encoding="utf-8") as f:
             data_t16 = json.load(f)
     elif os.path.exists(dest_t16):
         with open(dest_t16, "r", encoding="utf-8") as f:
@@ -75,12 +77,11 @@ def run_ingestion(
     else:
         raise FileNotFoundError("Raw Table 16 data not found.")
 
-    with open(dest_t16, "w", encoding="utf-8") as f:
-        json.dump(data_t16, f, indent=2)
 
     # Load Table 15
-    if os.path.exists(scratch_table15):
-        with open(scratch_table15, "r", encoding="utf-8") as f:
+    if scratch_table15 and os.path.exists(scratch_table15):
+        shutil.copyfile(scratch_table15, dest_t15)
+        with open(dest_t15, "r", encoding="utf-8") as f:
             data_t15 = json.load(f)
     elif os.path.exists(dest_t15):
         with open(dest_t15, "r", encoding="utf-8") as f:
@@ -88,8 +89,6 @@ def run_ingestion(
     else:
         raise FileNotFoundError("Raw Table 15 data not found.")
 
-    with open(dest_t15, "w", encoding="utf-8") as f:
-        json.dump(data_t15, f, indent=2)
 
     # Compute hashes
     hash_t16 = compute_sha256(dest_t16)
@@ -109,7 +108,8 @@ def run_ingestion(
         "project": "CreditLens - Indian Banking & Credit Portfolio Analytics",
         "publisher": "Reserve Bank of India (RBI)",
         "source_portal": "Database on Indian Economy (DBIE)",
-        "downloaded_at_utc": datetime.now(timezone.utc).isoformat(),
+        "ingested_at_utc": datetime.now(timezone.utc).isoformat(),
+        "archive_mode": "external_file_import" if scratch_table16 or scratch_table15 else "bundled_archive",
         "ingestion_version": "1.0.0",
         "modules": {
             "module_a_industry_credit": {

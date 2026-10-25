@@ -53,7 +53,7 @@ This report presents five evidence-backed financial findings derived strictly fr
 ### Finding 4: Industrial Credit Concentration (HHI) De-escalates to Moderate Levels
 - **Reporting Period:** January 2019 to June 2026
 - **Metric:** Herfindahl-Hirschman Index (HHI) and Top 3 Sectors Concentration Share
-- **HHI Movement:** Dropped from **1,713.93 points** (Jan 2019) to **1,431.30 points** (Jun 2026) (**-282.63 points**).
+- **HHI Movement:** Dropped from **1,713.94 points** (Jan 2019) to **1,431.30 points** (Jun 2026) (**-282.64 points**).
 - **Top 3 Sectors Share Movement:** Decreased from **56.84%** (Jan 2019) to **50.72%** (Jun 2026) (**-6.12 percentage points**).
 - **Top 3 Sectors (Jun 2026):** Infrastructure (31.68%), Basic Metals (11.20%), and Other Industries (7.84%).
 - **Supporting Visual:** `assets/dashboard_screenshots/sector_exposure_concentration.png`

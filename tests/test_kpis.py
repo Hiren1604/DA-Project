@@ -4,6 +4,8 @@ Unit tests for financial KPI calculations, growth metrics, and concentration mea
 
 import numpy as np
 import pandas as pd
+import sqlite3
+from excel.generate_reconciliation_excel import reconciliation_status
 
 
 def test_mom_growth_calculation(metrics_df):
@@ -46,3 +48,27 @@ def test_top3_concentration_bounds(concentration_df):
     """Assert top 3 concentration share is strictly between 0 and 100%."""
     assert (concentration_df["top3_concentration_share_pct"] > 30.0).all()
     assert (concentration_df["top3_concentration_share_pct"] < 80.0).all()
+
+
+def test_sqlite_calendar_month_rollover():
+    """SQL month matching must handle month ends and leap-year dates."""
+    cases = {
+        "2019-03-31": ("2019-02", "2018-03"),
+        "2020-03-31": ("2020-02", "2019-03"),
+        "2021-05-31": ("2021-04", "2020-05"),
+        "2024-01-31": ("2023-12", "2023-01"),
+    }
+    with sqlite3.connect(":memory:") as conn:
+        for date_value, expected in cases.items():
+            actual = conn.execute(
+                "SELECT strftime('%Y-%m', date(?, 'start of month', '-1 month')), "
+                "strftime('%Y-%m', date(?, 'start of month', '-1 year'))",
+                (date_value, date_value),
+            ).fetchone()
+            assert actual == expected
+
+
+def test_reconciliation_flags_injected_sql_error():
+    """A deliberately wrong SQL output must be detected by the independent audit."""
+    assert reconciliation_status([19.24, 19.24, 19.24]) == "MATCH"
+    assert reconciliation_status([19.24, 18.24, 19.24]) == "MISMATCH"

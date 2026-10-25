@@ -7,7 +7,7 @@
 **Domain:** Indian banking, credit markets, data analytics, business intelligence  
 **Core stack:** Python, pandas, NumPy, SQL, PostgreSQL, Excel, Power BI, Power Query, DAX  
 **Optional stack:** FastAPI, React, TypeScript, Tailwind CSS, Recharts, GitHub Actions  
-**Status note:** The project owner has stated that CreditLens is complete. This document provides a full product and implementation specification, including recommended upgrades. Features, row counts, findings, and technologies described below should be checked against the repository before being represented as implemented.
+**Status note:** This is an aspirational blueprint, not an as-built inventory. The current repository implements SQLite and a FastAPI/HTML dashboard; PostgreSQL and a finished Power BI PBIX are not included. Features, row counts, findings, and technologies described below should be checked against the source before being represented as implemented.
 
 ---
 

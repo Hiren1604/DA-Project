@@ -17,8 +17,8 @@ WITH total_monthly AS (
         d.reporting_quarter,
         f.credit_outstanding_cr AS total_credit_cr,
         -- Calendar prior month and prior year strings
-        strftime('%Y-%m', date(d.calendar_date, '-1 month')) AS prev_month_target,
-        strftime('%Y-%m', date(d.calendar_date, '-1 year')) AS prev_year_target
+        strftime('%Y-%m', date(d.calendar_date, 'start of month', '-1 month')) AS prev_month_target,
+        strftime('%Y-%m', date(d.calendar_date, 'start of month', '-1 year')) AS prev_year_target
     FROM fact_credit_outstanding f
     JOIN dim_date d ON f.date_id = d.date_id
     JOIN dim_sector s ON f.sector_id = s.sector_id
@@ -63,8 +63,8 @@ WITH sector_base AS (
         s.is_parent_total,
         s.is_mutually_exclusive,
         f.credit_outstanding_cr,
-        strftime('%Y-%m', date(d.calendar_date, '-1 month')) AS prev_month_target,
-        strftime('%Y-%m', date(d.calendar_date, '-1 year')) AS prev_year_target
+        strftime('%Y-%m', date(d.calendar_date, 'start of month', '-1 month')) AS prev_month_target,
+        strftime('%Y-%m', date(d.calendar_date, 'start of month', '-1 year')) AS prev_year_target
     FROM fact_credit_outstanding f
     JOIN dim_date d ON f.date_id = d.date_id
     JOIN dim_sector s ON f.sector_id = s.sector_id
@@ -135,7 +135,8 @@ WITH monthly_sector_shares AS (
         reporting_month,
         sector_name,
         credit_outstanding_cr,
-        sector_share_pct,
+        100.0 * credit_outstanding_cr /
+            SUM(credit_outstanding_cr) OVER (PARTITION BY reporting_month) AS exact_share_pct,
         RANK() OVER (PARTITION BY reporting_month ORDER BY credit_outstanding_cr DESC) AS rnk
     FROM v_sector_monthly_kpis
     WHERE is_mutually_exclusive = 1
@@ -144,11 +145,11 @@ SELECT
     reporting_month,
     COUNT(*) AS total_sectors_evaluated,
     ROUND(SUM(credit_outstanding_cr), 2) AS total_industry_credit_cr,
-    ROUND(SUM(POWER(sector_share_pct, 2)), 2) AS hhi_index,
-    ROUND(SUM(POWER(sector_share_pct / 100.0, 2)), 4) AS hhi_fraction,
-    ROUND(SUM(CASE WHEN rnk <= 3 THEN sector_share_pct ELSE 0 END), 2) AS top3_concentration_share_pct,
+    ROUND(SUM(POWER(exact_share_pct, 2)), 2) AS hhi_index,
+    ROUND(SUM(POWER(exact_share_pct / 100.0, 2)), 4) AS hhi_fraction,
+    ROUND(SUM(CASE WHEN rnk <= 3 THEN exact_share_pct ELSE 0 END), 2) AS top3_concentration_share_pct,
     MAX(CASE WHEN rnk = 1 THEN sector_name ELSE NULL END) AS largest_sector,
-    ROUND(MAX(CASE WHEN rnk = 1 THEN sector_share_pct ELSE 0 END), 2) AS largest_sector_share_pct
+    ROUND(MAX(CASE WHEN rnk = 1 THEN exact_share_pct ELSE 0 END), 2) AS largest_sector_share_pct
 FROM monthly_sector_shares
 GROUP BY reporting_month
 ORDER BY reporting_month DESC;

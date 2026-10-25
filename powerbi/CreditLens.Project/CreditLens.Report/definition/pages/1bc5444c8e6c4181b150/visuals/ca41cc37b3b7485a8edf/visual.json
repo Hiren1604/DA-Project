@@ -1,0 +1,102 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "ca41cc37b3b7485a8edf",
+  "position": {
+    "x": 25,
+    "y": 365,
+    "z": 1000,
+    "width": 800,
+    "height": 300,
+    "tabOrder": 1
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "reporting_month"
+                }
+              },
+              "queryRef": "Credit.reporting_month",
+              "nativeQueryRef": "reporting_month"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "sector_name"
+                }
+              },
+              "queryRef": "Credit.sector_name",
+              "nativeQueryRef": "sector_name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "quality_status"
+                }
+              },
+              "queryRef": "Credit.quality_status",
+              "nativeQueryRef": "quality_status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Credit"
+                    }
+                  },
+                  "Property": "exception_reason"
+                }
+              },
+              "queryRef": "Credit.exception_reason",
+              "nativeQueryRef": "exception_reason"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Data quality exceptions and source flags'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

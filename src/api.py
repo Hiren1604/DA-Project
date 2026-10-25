@@ -6,6 +6,8 @@ and data quality summaries directly from the SQLite database.
 
 import os
 import sqlite3
+import re
+from contextlib import closing
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse
@@ -27,6 +29,18 @@ def get_db():
     return conn
 
 
+def validate_month(month: Optional[str], conn: sqlite3.Connection) -> str:
+    if month is None:
+        row = conn.execute("SELECT MAX(reporting_month) FROM dim_date").fetchone()
+        return row[0]
+    if not re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", month):
+        raise HTTPException(status_code=422, detail="month must use YYYY-MM format")
+    exists = conn.execute("SELECT 1 FROM dim_date WHERE reporting_month = ? LIMIT 1", (month,)).fetchone()
+    if not exists:
+        raise HTTPException(status_code=404, detail=f"No data for period {month}")
+    return month
+
+
 STATIC_INDEX = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "index.html")
 
 
@@ -42,13 +56,9 @@ def serve_dashboard():
 def get_metadata():
     """Returns source metadata, publication version, and reporting bounds."""
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM dim_source LIMIT 1")
-    source = dict(cursor.fetchone())
-
-    cursor.execute("SELECT MIN(calendar_date) as min_date, MAX(calendar_date) as max_date, COUNT(DISTINCT reporting_month) as total_months FROM dim_date")
-    dates = dict(cursor.fetchone())
-    conn.close()
+    with closing(conn):
+        source = dict(conn.execute("SELECT * FROM dim_source LIMIT 1").fetchone())
+        dates = dict(conn.execute("SELECT MIN(calendar_date) as min_date, MAX(calendar_date) as max_date, COUNT(DISTINCT reporting_month) as total_months FROM dim_date").fetchone())
 
     return {
         "project": "CreditLens — Indian Banking & Credit Portfolio Analytics",
@@ -62,25 +72,12 @@ def get_metadata():
 def get_summary(month: Optional[str] = Query(None, description="Reporting month (YYYY-MM). Defaults to latest.")):
     """Returns high-level KPI cards for executive overview."""
     conn = get_db()
-    cursor = conn.cursor()
-
-    if not month:
-        cursor.execute("SELECT MAX(reporting_month) FROM dim_date")
-        month = cursor.fetchone()[0]
-
-    cursor.execute("SELECT * FROM v_total_industry_monthly WHERE reporting_month = ?", (month,))
-    row_tot = cursor.fetchone()
-    if not row_tot:
-        conn.close()
-        raise HTTPException(status_code=404, detail=f"No data for period {month}")
-
-    tot_dict = dict(row_tot)
-
-    cursor.execute("SELECT * FROM v_industry_concentration_hhi WHERE reporting_month = ?", (month,))
-    conc_row = cursor.fetchone()
-    conc_dict = dict(conc_row) if conc_row else {}
-
-    conn.close()
+    with closing(conn):
+        month = validate_month(month, conn)
+        row_tot = conn.execute("SELECT * FROM v_total_industry_monthly WHERE reporting_month = ?", (month,)).fetchone()
+        tot_dict = dict(row_tot)
+        conc_row = conn.execute("SELECT * FROM v_industry_concentration_hhi WHERE reporting_month = ?", (month,)).fetchone()
+        conc_dict = dict(conc_row) if conc_row else {}
     return {
         "reporting_month": month,
         "total_credit_cr": tot_dict.get("total_credit_cr"),
@@ -99,13 +96,11 @@ def get_summary(month: Optional[str] = Query(None, description="Reporting month 
 def get_sectors(level: Optional[str] = Query(None, description="Hierarchy level: grand_total, sector_total, sub_sector")):
     """Returns sector hierarchy taxonomy."""
     conn = get_db()
-    cursor = conn.cursor()
-    if level:
-        cursor.execute("SELECT * FROM dim_sector WHERE hierarchy_level = ? ORDER BY sector_code", (level,))
-    else:
-        cursor.execute("SELECT * FROM dim_sector ORDER BY sector_code")
-    rows = [dict(r) for r in cursor.fetchall()]
-    conn.close()
+    with closing(conn):
+        if level:
+            rows = [dict(r) for r in conn.execute("SELECT * FROM dim_sector WHERE hierarchy_level = ? ORDER BY sector_code", (level,)).fetchall()]
+        else:
+            rows = [dict(r) for r in conn.execute("SELECT * FROM dim_sector ORDER BY sector_code").fetchall()]
     return {"count": len(rows), "sectors": rows}
 
 
@@ -113,15 +108,11 @@ def get_sectors(level: Optional[str] = Query(None, description="Hierarchy level:
 def get_credit_trends(sector_code: Optional[str] = Query("2", description="Sector code. Defaults to 2 (Total Industries)")):
     """Returns monthly credit trend series for a specified sector."""
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT reporting_month, calendar_date, credit_outstanding_cr, sector_share_pct, mom_growth_pct, yoy_growth_pct
-        FROM v_sector_monthly_kpis
-        WHERE sector_code = ?
-        ORDER BY reporting_month ASC
-    """, (sector_code,))
-    rows = [dict(r) for r in cursor.fetchall()]
-    conn.close()
+    with closing(conn):
+        rows = [dict(r) for r in conn.execute("""
+            SELECT reporting_month, calendar_date, credit_outstanding_cr, sector_share_pct, mom_growth_pct, yoy_growth_pct
+            FROM v_sector_monthly_kpis WHERE sector_code = ? ORDER BY reporting_month ASC
+        """, (sector_code,)).fetchall()]
     if not rows:
         raise HTTPException(status_code=404, detail=f"No data for sector_code {sector_code}")
     return {"sector_code": sector_code, "count": len(rows), "series": rows}
@@ -131,29 +122,38 @@ def get_credit_trends(sector_code: Optional[str] = Query("2", description="Secto
 def get_credit_comparison(month: Optional[str] = Query(None, description="Reporting month (YYYY-MM). Defaults to latest.")):
     """Returns ranking and comparison of all 19 mutually exclusive sectors for a given period."""
     conn = get_db()
-    cursor = conn.cursor()
-    if not month:
-        cursor.execute("SELECT MAX(reporting_month) FROM dim_date")
-        month = cursor.fetchone()[0]
-
-    cursor.execute("""
+    with closing(conn):
+        month = validate_month(month, conn)
+        rows = [dict(r) for r in conn.execute("""
         SELECT sector_code, sector_name, credit_outstanding_cr, sector_share_pct, yoy_growth_pct, mom_growth_pct
         FROM v_sector_monthly_kpis
         WHERE reporting_month = ? AND is_mutually_exclusive = 1
         ORDER BY credit_outstanding_cr DESC
-    """, (month,))
-    rows = [dict(r) for r in cursor.fetchall()]
-    conn.close()
+    """, (month,)).fetchall()]
     return {"reporting_month": month, "count": len(rows), "comparison": rows}
+
+
+@app.get("/api/credit/concentration")
+def get_credit_concentration():
+    """Return the computed monthly HHI and concentration series."""
+    conn = get_db()
+    with closing(conn):
+        rows = [dict(r) for r in conn.execute("""
+            SELECT reporting_month, total_sectors_evaluated, total_industry_credit_cr,
+                   hhi_index, hhi_fraction, top3_concentration_share_pct,
+                   largest_sector, largest_sector_share_pct
+            FROM v_industry_concentration_hhi
+            ORDER BY reporting_month ASC
+        """).fetchall()]
+    return {"count": len(rows), "series": rows}
 
 
 @app.get("/api/data-quality")
 def get_data_quality():
     """Returns data quality checks summary and exception counts."""
     conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM v_data_quality_summary")
-    exceptions = [dict(r) for r in cursor.fetchall()]
+    with closing(conn):
+        exceptions = [dict(r) for r in conn.execute("SELECT * FROM v_data_quality_summary").fetchall()]
 
     # Read CSV report
     val_report_path = "data/processed/data_quality_report.csv"
@@ -162,7 +162,6 @@ def get_data_quality():
         import pandas as pd
         val_checks = pd.read_csv(val_report_path).to_dict(orient="records")
 
-    conn.close()
     return {
         "validation_checks": val_checks,
         "exceptions_summary": exceptions

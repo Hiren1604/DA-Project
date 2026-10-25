@@ -60,6 +60,19 @@ def test_api_credit_comparison():
     assert top1["sector_name"] == "Infrastructure"
 
 
+def test_api_concentration_series():
+    response = client.get("/api/credit/concentration")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 90
+    assert data["series"][0]["reporting_month"] == "2019-01"
+
+
+def test_api_month_validation():
+    assert client.get("/api/summary?month=2026-6").status_code == 422
+    assert client.get("/api/summary?month=2026-07").status_code == 404
+
+
 def test_api_data_quality():
     response = client.get("/api/data-quality")
     assert response.status_code == 200
